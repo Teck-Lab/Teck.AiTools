@@ -1,0 +1,359 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <title>Teck Lab · Multica software factory setup</title>
+  <style>
+    :root { font-family: Inter, "Segoe UI", system-ui, sans-serif; color: #142338; background: #f5f7fb; }
+    * { box-sizing: border-box; }
+    body { margin: 0; }
+    a { color: #2257af; }
+    .wrap { max-width: 1120px; margin: auto; padding: 28px 26px 90px; }
+    header { border-radius: 22px; background: linear-gradient(125deg,#142b51,#1b547e 68%,#147c80); color: white; padding: 34px 38px; box-shadow: 0 14px 30px #142b5122; }
+    header p { max-width: 760px; color: #d9e9f3; line-height: 1.55; margin: 8px 0 0; }
+    h1 { margin: 0; font-size: clamp(2rem,4vw,3rem); letter-spacing: -.04em; }
+    h2 { letter-spacing: -.025em; margin: 0 0 12px; font-size: 1.6rem; }
+    h3 { margin: 26px 0 9px; font-size: 1.12rem; }
+    p, li { line-height: 1.58; }
+    .eyebrow { text-transform: uppercase; letter-spacing: .12em; font-size: .76rem; font-weight: 700; opacity: .8; margin-bottom: 10px; }
+    .meta { font-size: .87rem; color: #c9dbe8; margin-top: 20px; }
+    nav { display: flex; flex-wrap: wrap; gap: 8px; margin: 22px 0; }
+    nav a { color: #23456e; background: white; text-decoration: none; border: 1px solid #d7e0ea; border-radius: 999px; padding: 8px 12px; font-size: .88rem; font-weight: 650; }
+    nav a:hover { border-color: #739cc7; }
+    section { background: white; border: 1px solid #dce4ed; border-radius: 18px; padding: 26px 30px; margin: 18px 0; box-shadow: 0 6px 20px #192d4909; }
+    .callout { border-left: 5px solid #d97b18; background: #fff9ef; border-radius: 8px; padding: 12px 16px; margin: 16px 0; }
+    .callout.critical { border-color: #bf4a4a; background: #fff4f3; }
+    .callout.good { border-color: #21836a; background: #effaf6; }
+    .callout p { margin: 4px 0; }
+    .step { display: flex; align-items: start; gap: 10px; margin: 14px 0 6px; }
+    .step input { margin-top: 5px; width: 18px; height: 18px; accent-color: #147c80; cursor: pointer; }
+    .step label { font-weight: 700; cursor: pointer; }
+    .path { font-weight: 700; color: #114f74; }
+    .small { color: #52647b; font-size: .89rem; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit,minmax(280px,1fr)); gap: 14px; }
+    .card { background: #f8fafc; border: 1px solid #dbe5ef; border-radius: 12px; padding: 15px 17px; }
+    .card h3 { margin-top: 0; }
+    table { width: 100%; border-collapse: collapse; margin: 12px 0 18px; font-size: .94rem; }
+    th { background: #eff4f9; text-align: left; }
+    th, td { border: 1px solid #dce5ee; padding: 10px 12px; vertical-align: top; line-height: 1.45; }
+    td code, li code, p code { font-family: ui-monospace, "Cascadia Code", Consolas, monospace; background: #edf2f7; border-radius: 4px; padding: 1px 4px; }
+    .copybox { position: relative; margin: 10px 0 22px; }
+    pre { white-space: pre-wrap; overflow-wrap: anywhere; background: #10243f; color: #e7f3ff; border-radius: 12px; padding: 18px 20px; font: .88rem/1.53 ui-monospace, "Cascadia Code", Consolas, monospace; margin: 0; }
+    .copy { position: absolute; right: 8px; top: 8px; background: #e5f3ff; color: #123a64; border: 0; border-radius: 8px; padding: 6px 10px; cursor: pointer; font-weight: 700; }
+    .copy:hover { background: white; }
+    details { border: 1px solid #dce5ee; border-radius: 10px; padding: 12px 14px; margin: 10px 0; }
+    summary { cursor: pointer; font-weight: 700; }
+    .tag { display: inline-block; padding: 3px 8px; border-radius: 20px; background: #e6f2f4; color: #126270; font-size: .79rem; font-weight: 700; }
+    .tag.warn { background: #ffead7; color: #9a5311; }
+    footer { color: #617189; font-size: .84rem; padding: 8px 6px; }
+    @media print { body { background: white; } .wrap { max-width: none; padding: 0; } header { box-shadow: none; } section { box-shadow: none; break-inside: avoid-page; } nav, .copy { display: none; } a { color: #183e75; } }
+  </style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="eyebrow">Teck Lab · Setup artifact</div>
+    <h1>Multica software factory</h1>
+    <p>Exact configuration for the existing Teck.Cloud Multica workspace: named agents, MCP assignments, GitHub Issues as the canonical work record, two workflows, projects, failure triage, and verification.</p>
+    <div class="meta">Prepared 15 November 2026 · Self-contained, offline HTML · No secrets embedded</div>
+  </header>
+  <nav aria-label="Guide sections">
+    <a href="#truth">Read this first</a><a href="#preflight">1 · Preflight</a><a href="#agents">2 · Agents</a><a href="#mcp">3 · MCP</a><a href="#github">4 · GitHub issues</a><a href="#workflows">5 · Workflows</a><a href="#projects">6 · Projects</a><a href="#pilot">7 · Pilot</a><a href="#autopilots">8 · Automations</a><a href="#sources">Sources</a>
+  </nav>
+
+  <section id="truth">
+    <h2>Read this first</h2>
+    <p><strong>Observed workspace:</strong> one Teck.Cloud workspace; repository links for Teck.Cloud, Teck.Coolify, Teck.AiTools, Teck.GitOps, and Teck.Terraform; online runtime <code>Oh-My-Pi (teck-multica-omp-1)</code>; two existing agents named Orchestrator and Deep Research Agent; shared MCP servers Firecrawl, Github, Github-Projects, and Searxng. There are no projects, custom workflows, or autopilots yet. Triage status exists, but its current description is truncated.</p>
+    <div class="callout critical">
+      <p><strong>Two separate records, with a clear authority:</strong> GitHub Issues and native GitHub subissues hold the agreed scope, acceptance criteria, priority, dependencies, and final closure. Multica issues hold agent assignments, runs, handoffs, and local workflow state. Every Multica issue must link its canonical GitHub issue. Agents update GitHub through the assigned <code>Github</code> and <code>Github-Projects</code> MCP servers and verify the result by reading it back.</p>
+      <p>Multica does not synchronize GitHub Issues by itself. This setup relies on the agents following the instructions below; it is not a transactional sync service. Do not silently claim the two records agree when a GitHub MCP call fails.</p>
+    </div>
+    <p>Use the existing Oh-My-Pi runtime. Multica issues, workflows, and wakeups carry work between runs. No custom runtime profile is needed for this setup.</p>
+  </section>
+
+  <section id="preflight">
+    <h2>1 · Preflight and GitHub settings</h2>
+    <div class="step"><input type="checkbox" id="p1"><label for="p1">Confirm the existing runtime is online and one simple agent chat succeeds.</label></div>
+    <p>Open <span class="path">Runtimes → Oh-My-Pi (teck-multica-omp-1)</span>. It should say <strong>online</strong>. A direct OMP model call succeeded in the sandbox, but the Multica UI path still needs this pilot check.</p>
+    <div class="step"><input type="checkbox" id="p2"><label for="p2">Check runtime skills, then import only the shared skills you want in Multica’s workspace library.</label></div>
+    <p>Open <span class="path">Skills → New skill → Copy from a runtime → Oh-My-Pi (teck-multica-omp-1)</span>. The sandbox has 31 readable <code>SKILL.md</code> files under OMP’s user-level skills directory. If the picker still says “No local skills found”, stop this step and treat that as an unresolved runtime discovery defect. Copying a skill is a snapshot, so later image changes require re-import. You do not need to copy all 31 merely to let OMP use its local skills.</p>
+    <div class="step"><input type="checkbox" id="p3"><label for="p3">Set PR integration behavior.</label></div>
+    <p>Open <span class="path">Settings → Code → Pull requests &amp; issues</span>. Set <strong>PR sidebar = On</strong>, <strong>Auto-link PRs = On</strong>, and <strong>After PRs merge, move the issue to = Don’t change</strong>. Confirm the GitHub row is connected to the Teck-Lab installation. This App reads PR/CI state; it does not grant Git push rights to OMP.</p>
+    <div class="step"><input type="checkbox" id="p4"><label for="p4">Keep model and Hindsight secrets out of agent environment variables.</label></div>
+    <p>The sandbox currently supplies <code>OMNIROUTE_API_KEY</code> and <code>HINDSIGHT_API_TOKEN</code> through Docker-managed proxy placeholders. Leave those two fields absent from every Multica agent. The Coolify <code>MULTICA_LLM_*</code> variables serve Multica’s own server-side assists.</p>
+  </section>
+
+  <section id="agents">
+    <h2>2 · Give every agent a name and a precise job</h2>
+    <p>Use <span class="path">Agents</span>. Rename the two existing agents, then create two more with <span class="path">New agent → Choose runtime → Oh-My-Pi (teck-multica-omp-1) → Configure</span>. Enter the values below manually in <strong>Name</strong>, <strong>Description</strong>, <strong>Instructions</strong>, and <strong>Model</strong>. Set <strong>Access = Only me</strong> for now. After creation, set <strong>Concurrency limit = 1</strong> on each agent’s detail page while this one sandbox is being piloted.</p>
+    <p class="small">The names refer to the work: Columbo investigates failures, Curie researches uncertain questions, Lovelace implements changes, and Hopper reviews and diagnoses defects.</p>
+    <table>
+      <thead><tr><th>Action and name</th><th>Model</th><th>Description field</th></tr></thead>
+      <tbody>
+        <tr><td>Rename <strong>Orchestrator → Columbo</strong></td><td><code>omniroute/teck-orchestrator</code></td><td>Plans work, triages failures, and coordinates issue handoffs.</td></tr>
+        <tr><td>Rename <strong>Deep Research Agent → Curie</strong></td><td><code>omniroute/teck-researcher</code></td><td>Investigates uncertain designs and causes, with sourced findings.</td></tr>
+        <tr><td>Create <strong>Lovelace</strong></td><td><code>omniroute/teck-executor</code></td><td>Implements scoped changes and prepares reviewed pull requests.</td></tr>
+        <tr><td>Create <strong>Hopper</strong></td><td><code>omniroute/teck-judge</code></td><td>Independently reviews changes and verifies delivery evidence.</td></tr>
+      </tbody>
+    </table>
+    <div class="callout">
+      <p><strong>OMP helpers inside a Multica run:</strong> OMP's built-in <code>task</code> tool can spawn its bundled subagents in print/JSON mode. These helpers work inside the assigned Multica agent's run; they are not separate Multica agents or GitHub subissues. The Multica image does not install the shared Orca-specific custom subagent presets, because their instructions refer to Orca dispatch and skills.</p>
+      <p>In each Multica agent's <strong>Custom Args</strong>, add one token <code>--wait-async</code>. This keeps a headless run alive until its background <code>task</code> jobs deliver their results. On <strong>Lovelace</strong>, add a second token <code>--advisor</code> to enable OMP's advisor for that run. The image maps <code>modelRoles.advisor</code> to <code>omniroute/teck-advisor</code> and installs <code>WATCHDOG.md</code> and <code>WATCHDOG.yml</code> in OMP's user directory. The single enabled Implementation watchdog checks concrete drift every third turn. Its global <code>advisor.enabled</code> is false, so the argument is needed. OMP's advisor can steer a running turn in print/JSON mode, but final advice does not silently start another turn after the run settles. Hopper remains the independent Multica review step.</p>
+      <p><strong>Three review passes, one Multica Code Review step:</strong> Hopper asks OMP's bundled <code>reviewer</code> for correctness and regressions, bundled <code>security-reviewer</code> for reachable security issues, and the installed <code>quality-reviewer</code> for maintainability and test quality. All inspect the same exact PR/base-head snapshot. Hopper deduplicates their findings, checks CI and issue acceptance criteria, and posts one verdict. OMP's <code>/review</code> command works in headless mode, but its interactive mode menu is absent there; explicit <code>task</code> dispatch gives these three passes a stable target.</p>
+      <p>Subagents work in the Multica run's checkout. The current OMP setting has <code>task.isolation.enabled: false</code>; do not assign overlapping edits to parallel helpers. If a helper discovers a separately trackable deliverable, the parent agent updates the canonical GitHub issue and asks Columbo to create a native subissue when the split rule is met.</p>
+    </div>
+    <h3>Columbo · paste into Instructions</h3>
+    <div class="copybox"><button class="copy" type="button">Copy</button><pre>You are Columbo, Teck Lab's planning and triage lead. GitHub Issues is the canonical record for scope, acceptance criteria, priority, native subissues, dependencies, and final closure. Multica is the execution record for assignments, runs, and workflow handoffs.
+
+At the start of each issue run, identify the primary repository and canonical GitHub issue URL. Search existing GitHub issues through the assigned Github MCP server before creating anything. If there is no suitable issue, create one in the primary repository with a concrete outcome and acceptance criteria. Put its URL in the Multica issue description or a durable comment, and put the Multica issue identifier and URL in a GitHub issue comment. Read both records back after writing.
+
+Triage failures from evidence: failing run, commit, logs, rerun history, affected users/services, and deployment state. Classify reproducible defect, flaky test, infrastructure failure, configuration/credential failure, or unknown. Reuse an existing issue for the same cause where possible. Record owner, next action, and the evidence needed to verify resolution. Do not close either issue because an agent run ended or a PR merged.
+
+Default to one GitHub issue for one coherent deliverable. Create native GitHub subissues only for distinct deliverables with their own acceptance criteria and a real ownership, parallelism, dependency, or tracking benefit. An OMP task subagent is a helper within this run, not a new issue. Record actual blocked-by edges separately from parentage; verify every relationship by reading it back. Ask Curie for bounded research when evidence is insufficient. Hand implementation to Lovelace and independent review to Hopper. Keep the GitHub plan current at each handoff.
+
+Never merge, apply Terraform, or change a live environment without the human approval required by the issue's workflow. Move a Multica issue to Done and close the GitHub issue only after the agreed test, review, rollout, and verification evidence is recorded.</pre></div>
+    <h3>Curie · paste into Instructions</h3>
+    <div class="copybox"><button class="copy" type="button">Copy</button><pre>You are Curie, Teck Lab's research agent. Investigate the exact question and repository named by the issue or by Columbo. Read the canonical GitHub issue and existing comments first. Use primary documentation, source code, logs, and reproducible checks; cite links and exact file paths.
+
+Return findings, confidence, alternatives, and the next discriminating check. Distinguish observed facts from inference. Use OMP task subagents only for bounded independent read-only checks and wait for their results before reporting. Do not create duplicate issues, edit production code, change issue scope or dependencies, close issues, merge PRs, or apply infrastructure changes. Post the research result to the current Multica issue and, when it changes the canonical plan, to its GitHub issue through the assigned Github MCP server. Verify the GitHub comment is present.</pre></div>
+    <h3>Lovelace · paste into Instructions</h3>
+    <div class="copybox"><button class="copy" type="button">Copy</button><pre>You are Lovelace, Teck Lab's implementation agent. Work only on the deliverable and repository named by the canonical GitHub issue and its linked Multica issue. Read both records, the repository instructions, and the relevant tests before editing. Use Multica's isolated checkout for the run.
+
+Implement the smallest complete change, add meaningful tests, run relevant checks, and record their exact results. Use OMP task subagents for bounded disjoint work or investigation; wait for all owned helpers, inspect their output, and reconcile their edits before reporting completion. The OMP advisor's notes are evidence to assess, not a substitute for Hopper's independent review. Keep the GitHub issue updated through the assigned Github MCP server when scope, blockers, or evidence changes; read the result back. Do not create a subissue for a helper, a test, or a review. Request a native GitHub subissue from Columbo only when it is a separately trackable deliverable with acceptance criteria.
+
+Prepare a PR whose title or branch includes the Multica issue identifier, and whose body links the canonical GitHub issue. Use a reference such as 'Refs #123' until the agreed GitHub closure gate; do not use a closing keyword that would close the issue before deployment verification. Report the reviewed base/head, files changed, tests, CI result, and any remaining risk. Do not merge, apply Terraform, or mark either issue Done.</pre></div>
+    <h3>Hopper · paste into Instructions</h3>
+    <div class="copybox"><button class="copy" type="button">Copy</button><pre>You are Hopper, Teck Lab's independent reviewer. Review the canonical GitHub issue, acceptance criteria, Multica run record, exact PR diff, tests, and actual CI state. Do not rely on Lovelace's summary alone. Record the exact PR URL or base/head commit IDs and ensure all review passes use the same snapshot. Use OMP's task tool to run three read-only specialist passes: agent reviewer for behavior, contracts, regressions and test adequacy; agent security-reviewer for reachable security issues and changed trust boundaries; agent quality-reviewer for maintainability, complexity, operational quality and meaningful tests. Wait for all three, inspect their evidence, deduplicate findings, and own one final verdict. If a specialist cannot run, report the missing pass explicitly. Do not create separate Multica or GitHub issues just to represent review passes.
+
+Post a clear approve or request-changes verdict with exact reviewed revision, findings, CI and test evidence, and remaining risks to the Multica issue. Also record the verdict on the canonical GitHub issue through the assigned Github MCP server and read it back. If a change is needed, return the Multica issue to the implementation step with specific findings. An approval is permission to proceed to the human acceptance or approval gate; it is not permission to merge, deploy, apply Terraform, or close the GitHub issue. After rollout, verify the observed result before recommending Done.</pre></div>
+  </section>
+
+  <section id="mcp">
+    <h2>3 · Assign the four MCP servers already registered</h2>
+    <p>For each agent, open <span class="path">Agents → [agent] → MCP → From the workspace library → Add from workspace</span>, then select the exact existing server names below. A server showing “Not assigned to any agent” under <span class="path">Settings → MCP servers</span> is unavailable to the agents until assigned. Do not re-enter the URLs or tokens; the saved workspace server config is reused.</p>
+    <table>
+      <thead><tr><th>Agent</th><th>Assign from workspace</th><th>Purpose</th></tr></thead>
+      <tbody>
+        <tr><td>Columbo</td><td><code>Github</code>, <code>Github-Projects</code></td><td>Canonical issues, native relationships, Project fields.</td></tr>
+        <tr><td>Curie</td><td><code>Github</code>, <code>Firecrawl</code>, <code>Searxng</code></td><td>Issue context and sourced investigation.</td></tr>
+        <tr><td>Lovelace</td><td><code>Github</code></td><td>Read and update its assigned GitHub issue.</td></tr>
+        <tr><td>Hopper</td><td><code>Github</code></td><td>Read issue/PR context and post a verified review record.</td></tr>
+      </tbody>
+    </table>
+    <div class="callout">
+      <p><strong>Capability check:</strong> in Columbo's first run, ask it to list the exposed Github MCP operations for issue creation, native subissues, and issue dependencies, and to read a real issue. If an operation is absent, do not substitute a body mention for a native relationship. The Orca setup has an Actions relationship bridge in some repositories, but its deployed presence and supported inputs must be checked before use.</p>
+      <p>MCP assignment is a tool grant, not a guarantee that an agent follows instructions. Review GitHub mutations and read-back evidence during the pilot.</p>
+    </div>
+  </section>
+
+  <section id="github">
+    <h2>4 · GitHub Issues are the working backing store</h2>
+    <p>This is the rule every agent and workflow step follows. A Multica issue is the execution counterpart of <strong>one canonical GitHub issue</strong>, with URLs in both directions. A GitHub parent can have native subissues when the deliverables are genuinely separate. Research, review, test runs, and OMP helper agents stay on the same issue unless they are independent deliverables.</p>
+    <div class="grid">
+      <div class="card"><h3>GitHub owns</h3><p>Outcome and acceptance criteria; primary repository; native subissue tree; blocked-by relationships; priority and Project fields; closure after verified delivery.</p></div>
+      <div class="card"><h3>Multica owns</h3><p>Named agent assignment; run transcripts; workflow step and handoff; local working checkout; evidence comments; wakeups when work waits.</p></div>
+    </div>
+    <h3>Paste into a new canonical GitHub issue body</h3>
+    <div class="copybox"><button class="copy" type="button">Copy</button><pre>## Outcome
+[One observable result.]
+
+## Acceptance criteria
+- [ ] [Behavior or artifact that can be checked.]
+- [ ] [Relevant tests, integration check, or rollout evidence.]
+
+## Scope
+Primary repository: [Teck-Lab/repo]
+Other repositories, if needed: [links]
+Out of scope: [explicit exclusions, if any]
+
+## Plan and dependencies
+[One issue by default. Add native subissues only for separate deliverables.]
+[Record real blocked-by relationships; parentage does not mean dependency.]
+
+## Verification and closure gate
+[Exact CI result, human review, rollout/apply, and observed post-change check.]
+
+## Multica execution
+[Multica issue identifier and URL once created.]</pre></div>
+    <ol>
+      <li><strong>Intake:</strong> Columbo searches the primary repository's GitHub issues via MCP; reuse an existing one for the same outcome. Then create or link the matching Multica issue.</li>
+      <li><strong>Planning:</strong> Columbo keeps acceptance criteria and dependencies on GitHub. When creating a native subissue or blocker edge, read it back before releasing dependent work.</li>
+      <li><strong>Execution:</strong> Lovelace comments material progress, failures, and PR links on GitHub, and posts the same run evidence to Multica. Branch or PR title includes the Multica identifier so its PR card links automatically.</li>
+      <li><strong>Review and delivery:</strong> Hopper records the verdict. Human acceptance/approval remains a separate gate. A merged PR does not close the GitHub issue when rollout verification is still outstanding.</li>
+      <li><strong>Close:</strong> after direct verification, Columbo or the authorized owner closes the GitHub issue via MCP, reads it back, records the evidence on the Multica issue, then moves Multica to Done.</li>
+    </ol>
+    <div class="callout good"><p><strong>Subissue split rule from Orca:</strong> split only when there are distinct deliverables with independent acceptance criteria <em>and</em> a concrete benefit from separate ownership, parallel execution, staging, or blockers. A second agent or checkout alone is not a reason to create a GitHub subissue.</p></div>
+  </section>
+
+  <section id="workflows">
+    <h2>5 · Create the status library and two workflows</h2>
+    <p>Open <span class="path">Settings → Workflows</span>. Keep these existing statuses in their current categories: <strong>Unstarted:</strong> Backlog and Todo; <strong>Started:</strong> Triage, In Progress, In Review, and Blocked; <strong>Done:</strong> Done; <strong>Closed:</strong> Cancelled. Add these exact custom statuses in <strong>Started</strong>: <strong>Implementation</strong>, <strong>Code Review</strong>, <strong>Acceptance</strong>, <strong>Plan</strong>, <strong>Change PR</strong>, <strong>Approval</strong>, <strong>Verify</strong>, and <strong>Close</strong>. Both workflows below include Backlog and Todo. Code Review is one status containing the three OMP specialist passes; separate security and quality statuses would create extra issue handoffs without improving the review record. In Review remains available in the library but is not a column in these workflows.</p>
+    <table>
+      <thead><tr><th>Status library category</th><th>Keep existing</th><th>Add here</th></tr></thead>
+      <tbody>
+        <tr><td>Unstarted</td><td>Backlog, Todo</td><td>Nothing</td></tr>
+        <tr><td>Started</td><td>Triage, In Progress, In Review, Blocked</td><td>Implementation, Code Review, Acceptance, Plan, Change PR, Approval, Verify, Close</td></tr>
+        <tr><td>Done</td><td>Done</td><td>Nothing</td></tr>
+        <tr><td>Closed</td><td>Cancelled</td><td>Nothing</td></tr>
+      </tbody>
+    </table>
+    <p><strong>Why both Backlog and Todo:</strong> Backlog holds an issue without starting its assigned agent. Moving it to Todo hands it to Columbo and starts a run. Columbo immediately changes the status to Triage and investigates within that run. Leave Triage set to <strong>No handoff</strong> so that status change does not start a duplicate Columbo run.</p>
+    <p>Shorten the existing Triage status description to: <em>Classify evidence and impact; assign an owner and next action; close only after verification.</em> The complete policy belongs in Columbo's agent and workflow instructions.</p>
+    <h3>Workflow A · Product delivery</h3>
+    <p>Select <span class="path">Settings → Workflows → New workflow → Start blank</span>. Name it <strong>Product delivery</strong>. Add columns in this order:</p>
+    <div class="copybox"><button class="copy" type="button">Copy</button><pre>Backlog → Todo → Triage → Implementation → Code Review → Acceptance → Close → Blocked → Done</pre></div>
+    <table>
+      <thead><tr><th>Column</th><th>When issue enters</th><th>Paste into step instructions</th><th>When done / rejected</th></tr></thead>
+      <tbody>
+        <tr><td>Backlog</td><td>No handoff</td><td>Park unready work here. Assignment here does not start a run.</td><td>Move to Todo when ready to start Columbo.</td></tr>
+        <tr><td>Todo</td><td>Hand to agent → Columbo</td><td>Immediately move this issue to Triage, then find or create the canonical GitHub issue via Github MCP. Confirm primary repo, outcome, acceptance criteria, impact, owner, next action, and native dependencies. Classify failures as reproducible, flaky, infrastructure, configuration/credential, or unknown. Link both records and read back GitHub changes. Ask Curie for bounded research if needed. Continue triage in this run.</td><td>At start → Triage; after triage → Implementation or Blocked.</td></tr>
+        <tr><td>Triage</td><td>No handoff</td><td>Columbo is already working from the Todo run. Keep the issue here while it investigates and updates GitHub.</td><td>Columbo moves to Implementation when scoped; use Blocked if an external prerequisite remains.</td></tr>
+        <tr><td>Implementation</td><td>Hand to agent → Lovelace</td><td>Implement the GitHub issue's accepted scope in an isolated checkout. Add relevant tests, run them, update the canonical issue through MCP, and prepare a PR containing the Multica issue ID. Report exact evidence. Do not merge or close either issue.</td><td>When done → Code Review.</td></tr>
+        <tr><td>Code Review</td><td>Hand to agent → Hopper</td><td>Run the OMP reviewer, security-reviewer, and quality-reviewer passes on one exact snapshot. Reconcile findings with acceptance criteria, tests, and CI. Post one verdict to both records and verify the GitHub comment exists.</td><td>When done → Acceptance. If rejected → Implementation.</td></tr>
+        <tr><td>Acceptance</td><td>Hand to member → You</td><td>Review the feature, PR, CI, and any deployment evidence. Approve the merge or request changes. After the agreed result is verified, move to Close so Columbo can reconcile the GitHub issue.</td><td>You move to Close, Implementation, or Blocked.</td></tr>
+        <tr><td>Close</td><td>Hand to agent → Columbo</td><td>Read the acceptance record and current GitHub issue/PR state. Confirm every required check and rollout outcome has direct evidence. Close the canonical GitHub issue via Github MCP, read it back, and record that URL and result in Multica. If any gate is missing, move to Blocked or the relevant active step instead.</td><td>When verified → Done.</td></tr>
+        <tr><td>Blocked</td><td>No handoff</td><td>Record blocker, owner, and condition to resume in both issues.</td><td>Move back to the applicable active step after the blocker clears.</td></tr>
+        <tr><td>Done</td><td>No handoff</td><td>GitHub issue closed only after verified acceptance.</td><td>Terminal.</td></tr>
+      </tbody>
+    </table>
+    <h3>Workflow B · Platform change</h3>
+    <p>Create another blank workflow named <strong>Platform change</strong>. Add:</p>
+    <div class="copybox"><button class="copy" type="button">Copy</button><pre>Backlog → Todo → Triage → Plan → Change PR → Code Review → Approval → Verify → Close → Blocked → Done</pre></div>
+    <table>
+      <thead><tr><th>Column</th><th>When issue enters</th><th>Paste into step instructions</th><th>When done / rejected</th></tr></thead>
+      <tbody>
+        <tr><td>Backlog</td><td>No handoff</td><td>Park unready work here. Assignment here does not start a run.</td><td>Move to Todo when ready to start Columbo.</td></tr>
+        <tr><td>Todo</td><td>Hand to agent → Columbo</td><td>Immediately move this issue to Triage, then find or create the canonical GitHub issue and link both records. Confirm affected repositories, live systems, severity, owner, next action, and whether this is a reproducible defect, flaky check, infrastructure failure, or configuration issue. Continue triage in this run.</td><td>At start → Triage; after triage → Plan or Blocked.</td></tr>
+        <tr><td>Triage</td><td>No handoff</td><td>Columbo is already working from the Todo run. Keep the issue here while it investigates and updates GitHub.</td><td>Columbo moves to Plan when scoped; use Blocked for an external prerequisite.</td></tr>
+        <tr><td>Plan</td><td>Hand to agent → Columbo</td><td>Write the expected rendered GitOps diff, Terraform plan where applicable, rollout impact, verification checks, and rollback in the canonical GitHub issue. Verify dependencies and native subissues through MCP. Ask Curie for evidence where design is uncertain.</td><td>When done → Change PR.</td></tr>
+        <tr><td>Change PR</td><td>Hand to agent → Lovelace</td><td>Implement the authorized change, capture rendered/plan output, run checks, and prepare a PR. Link and update the canonical GitHub issue. Do not merge or apply.</td><td>When done → Code Review.</td></tr>
+        <tr><td>Code Review</td><td>Hand to agent → Hopper</td><td>Run the OMP reviewer, security-reviewer, and quality-reviewer passes on one exact snapshot. Review CI, rendered GitOps output, Terraform plan, impact, rollback, and issue acceptance criteria. Record one verdict on both issues.</td><td>When done → Approval. If rejected → Change PR.</td></tr>
+        <tr><td>Approval</td><td>Hand to member → You</td><td>Approve the exact reviewed revision and live effect. You decide who merges or applies. Record the authorization and actual merge/apply result before moving to Verify.</td><td>You move to Verify, Change PR, or Blocked.</td></tr>
+        <tr><td>Verify</td><td>Hand to agent → Hopper</td><td>Inspect the actual rollout/apply and post-change checks. Compare observed state with the GitHub issue's acceptance criteria. Record exact evidence; request remediation if it failed. Recommend closure only when verified.</td><td>When done → Close. If rejected → Change PR or Plan, according to cause.</td></tr>
+        <tr><td>Close</td><td>Hand to agent → Columbo</td><td>Read Hopper's verification and the human approval. Confirm the exact deployed revision and all acceptance checks. Close the canonical GitHub issue via Github MCP, read it back, then record the result in Multica. Do not close on a merge event alone.</td><td>When verified → Done.</td></tr>
+        <tr><td>Blocked</td><td>No handoff</td><td>Record prerequisite, owner, and resume condition on GitHub and Multica.</td><td>Move back to the relevant active step.</td></tr>
+        <tr><td>Done</td><td>No handoff</td><td>GitHub issue and Multica issue closed after verification.</td><td>Terminal.</td></tr>
+      </tbody>
+    </table>
+    <div class="callout"><p>After adding a new status, save the workflow before configuring that status's handoff if the UI requests it. A finished run does not advance an issue by itself: the agent or member handling the step must change its status. A handoff starts the next agent run.</p></div>
+  </section>
+
+  <section id="projects">
+    <h2>6 · Create the three projects</h2>
+    <p>Open <span class="path">Projects → New project</span>. Set <strong>Lead = You</strong>, <strong>Access = Entire workspace</strong> unless the project needs private membership, and <strong>Status = In progress</strong> for active work. Select the workflow and repositories as shown. All five repositories already appear at workspace level; choose them as project resources rather than adding local Windows folders to the Docker runtime.</p>
+    <table>
+      <thead><tr><th>Project name</th><th>Workflow</th><th>Resources → Repositories</th><th>Description to paste</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Teck.Cloud development</strong></td><td>Product delivery</td><td>Teck.Cloud. Add Teck.GitOps when a body of work includes deployment changes.</td><td>Deliver Teck.Cloud features and fixes. GitHub Issues holds accepted scope and closure. Each issue names its primary repository and acceptance tests. Cross-repository changes stay linked under one canonical GitHub outcome; rollout evidence is required before closure.</td></tr>
+        <tr><td><strong>Platform foundation</strong></td><td>Platform change</td><td>Teck.GitOps, Teck.Terraform, Teck.AiTools</td><td>Maintain the Kubernetes, Terraform, GitOps, agent runtime, and sandbox foundation. Every live-impacting change records rendered diff or plan, rollout effect, rollback, human approval, and observed verification on its canonical GitHub issue.</td></tr>
+        <tr><td><strong>Coolify retirement</strong></td><td>Platform change</td><td>Teck.Coolify, Teck.GitOps, Teck.Terraform</td><td>Migrate each remaining Coolify-managed service to the target platform and verify behavior, data, access, and rollback. Keep Teck.Coolify as the source-of-truth reference until each service has a verified replacement. Complete this project only after all migration issues and final decommission checks pass.</td></tr>
+      </tbody>
+    </table>
+    <p class="small">A project can link multiple repositories, and one issue belongs to one project. If a Cloud feature needs GitOps, keep one parent outcome and use native GitHub subissues only for independently tracked deliverables.</p>
+  </section>
+
+  <section id="pilot">
+    <h2>7 · Run one real pilot before automation</h2>
+    <ol>
+      <li>Pick one small existing GitHub issue in Teck.Cloud or Teck.AiTools. If none fits, make a real small issue using the body template above. Do not create a dummy issue just to test workflow.</li>
+      <li>Create its Multica execution issue in the matching project. In the description put <code>Canonical GitHub issue: &lt;URL&gt;</code>. Start it in <strong>Backlog</strong>, then move it to <strong>Todo</strong> to hand it to Columbo. Confirm Columbo moves it to <strong>Triage</strong> within the same run.</li>
+      <li>Confirm Columbo reads and updates the GitHub issue via MCP, writes the Multica cross-link to GitHub, and reads it back. Confirm the correct primary repo is used.</li>
+      <li>Move through Lovelace and Hopper. Check the separate runs, actual diff/tests/CI, and a PR whose branch or title includes the Multica issue ID. Confirm Multica shows the linked PR and that GitHub stays open until acceptance.</li>
+      <li>For a live platform change, stop at Approval until you have approved the exact revision. Then observe Verify and close GitHub first, Multica second.</li>
+    </ol>
+    <div class="callout critical"><p>If the Github MCP server lacks native subissue or dependency operations, or the agent cannot read back its mutation, treat that capability as unverified. Do not claim Orca-equivalent issue backing yet. Continue single-issue work and resolve the missing operation before relying on staged execution.</p></div>
+  </section>
+
+  <section id="autopilots">
+    <h2>8 · Add automations after the pilot</h2>
+    <h3>First: failed CI triage</h3>
+    <p>Open <span class="path">Autopilot → New autopilot → Start from scratch</span> and enter the fields below. Leave Project empty because the failing repository determines the project during triage. <strong>Create issue</strong> retains the failure even when the sandbox runtime is offline; Columbo should link it to an existing canonical GitHub issue and mark the intake duplicate when applicable.</p>
+    <table><tbody>
+      <tr><th>Name</th><td>Failed CI triage</td></tr>
+      <tr><th>Assignee</th><td>Columbo</td></tr>
+      <tr><th>Project</th><td>None</td></tr>
+      <tr><th>Execution mode</th><td>Create issue</td></tr>
+      <tr><th>Subscribers</th><td>You</td></tr>
+      <tr><th>Trigger</th><td>Webhook. Keep generated URL private in an organization or repository Actions secret.</td></tr>
+    </tbody></table>
+    <h3>Paste into failed CI Runbook</h3>
+    <div class="copybox"><button class="copy" type="button">Copy</button><pre>Review the incoming failed CI event, repository, commit, branch, workflow, run attempt, logs, reruns, and current PR/issue context. Search existing canonical GitHub issues via Github MCP before creating one. Distinguish reproducible code defect, flaky test, infrastructure failure, and configuration/credential failure. Record impact, cause or uncertainty, owner, next action, and a verification condition. Link this Multica intake issue to the existing GitHub issue when possible; do not create duplicate canonical work. Do not close a defect until the fix or recovery has been verified. If this delivery lacks enough evidence, record what is missing and leave it for human triage.</pre></div>
+    <p>The Multica GitHub App webhook is for PR/CI display; it is not the autopilot webhook. In each repository, a GitHub Actions workflow can send only failed completed runs to the autopilot URL. Save that URL as <code>MULTICA_FAILURE_WEBHOOK_URL</code> in Actions secrets, then use a stable idempotency key based on run ID and attempt. The following is a template; replace <code>CI</code> with that repository's actual workflow name:</p>
+    <div class="copybox"><button class="copy" type="button">Copy</button><pre>name: Notify Multica of failed CI
+on:
+  workflow_run:
+    workflows: ["CI"]
+    types: [completed]
+jobs:
+  notify:
+    if: github.event.workflow_run.conclusion == 'failure'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Send failed run
+        env:
+          URL: &#36;{{ secrets.MULTICA_FAILURE_WEBHOOK_URL }}
+          REPOSITORY: &#36;{{ github.repository }}
+          RUN_ID: &#36;{{ github.event.workflow_run.id }}
+          RUN_ATTEMPT: &#36;{{ github.event.workflow_run.run_attempt }}
+          RUN_URL: &#36;{{ github.event.workflow_run.html_url }}
+          HEAD_SHA: &#36;{{ github.event.workflow_run.head_sha }}
+        run: |
+          test -n "$URL"
+          jq -n --arg repository "$REPOSITORY" --arg run_id "$RUN_ID" \
+            --arg run_attempt "$RUN_ATTEMPT" --arg run_url "$RUN_URL" \
+            --arg head_sha "$HEAD_SHA" \
+            '{event:"ci.failed", repository:$repository, run_id:$run_id,
+              run_attempt:$run_attempt, run_url:$run_url, head_sha:$head_sha}' |
+            curl --fail-with-body --retry 2 -X POST "$URL" \
+              -H "Content-Type: application/json" \
+              -H "Idempotency-Key: $REPOSITORY-$RUN_ID-$RUN_ATTEMPT" \
+              --data-binary @-</pre></div>
+    <p class="small">In the HTML-rendered copy, the <code>&#36;{{ ... }}</code> expressions are literal GitHub Actions expressions. Review each repository's existing workflow names and security policy before adding the relay.</p>
+    <h3>Then: weekly dependency and security review</h3>
+    <p><strong>Name:</strong> Weekly dependency and security review · <strong>Assignee:</strong> Curie · <strong>Mode:</strong> Create issue · <strong>Schedule:</strong> Monday 09:00, <code>Europe/Copenhagen</code> · <strong>Project:</strong> Platform foundation. <strong>Runbook:</strong></p>
+    <div class="copybox"><button class="copy" type="button">Copy</button><pre>Review dependency and security changes across the project repositories. Cite authoritative advisories, affected versions, exposure, and evidence. Search existing GitHub issues through Github MCP and update an existing one for the same finding. Create a new canonical GitHub issue only for an actionable, distinct finding with an owner and verification criterion. Record a concise summary on this Multica issue. Do not modify code, merge, deploy, or close findings without verified remediation.</pre></div>
+    <h3>Then: read-only platform health and drift report</h3>
+    <p><strong>Name:</strong> Weekly platform health and drift · <strong>Assignee:</strong> Curie · <strong>Mode:</strong> Create issue · <strong>Schedule:</strong> Monday 10:00, <code>Europe/Copenhagen</code> · <strong>Project:</strong> Platform foundation. <strong>Runbook:</strong></p>
+    <div class="copybox"><button class="copy" type="button">Copy</button><pre>Collect read-only GitOps, Terraform, and platform health evidence available to this runtime. Compare desired and observed state without applying changes. Report the exact source, time, affected service, and confidence of each finding. Search existing canonical GitHub issues and update them where the same problem is already tracked. For each new actionable drift item, create a scoped GitHub issue with an owner, next action, and verification condition, then link it from this Multica report. Do not merge, reconcile, apply, or change production state.</pre></div>
+  </section>
+
+  <section id="sources">
+    <h2>Primary references</h2>
+    <ul>
+      <li><a href="https://multica.ai/docs/agents-create">Multica: create and configure agents</a> — runtime, instructions, concurrency, and MCP assignment.</li>
+      <li><a href="https://multica.ai/docs/workflows">Multica: workflows</a> — columns, handoffs, next and rejected steps.</li>
+      <li><a href="https://multica.ai/docs/issues">Multica: issues and statuses</a> — Backlog and Todo queue behavior, lifecycle categories, and custom status rules.</li>
+      <li><a href="https://multica.ai/docs/project-resources">Multica: project resources</a> — multiple repositories and runtime checkouts.</li>
+      <li><a href="https://multica.ai/docs/github-integration">Multica: GitHub integration</a> — PR auto-linking and merge status settings; read-only App scope.</li>
+      <li><a href="https://multica.ai/docs/autopilots">Multica: autopilots</a> — create-issue mode, webhooks, idempotency, and offline behavior.</li>
+      <li><a href="https://github.com/can1357/oh-my-pi/blob/main/docs/cli-reference.md">OMP CLI reference</a> — JSON print mode, <code>--wait-async</code>, and background-job disposal.</li>
+      <li><a href="https://github.com/can1357/oh-my-pi/blob/main/docs/tools/task.md">OMP task tool</a> — bundled subagents and background execution.</li>
+      <li><a href="https://github.com/can1357/oh-my-pi/blob/main/docs/slash-command-internals.md">OMP review command</a> — headless <code>/review</code> behavior and its single reviewer task.</li>
+      <li><a href="https://github.com/can1357/oh-my-pi/blob/main/docs/advisor-watchdog.md">OMP advisor</a> — headless <code>--advisor</code> behavior and final-review timing.</li>
+      <li><a href="https://github.com/Teck-Lab/Teck.AiTools/blob/main/providers/multica/README.md">Teck.AiTools Multica provider</a> — sandbox image, Docker-managed credentials, and MCP setup.</li>
+    </ul>
+  </section>
+  <footer>Progress checkboxes are saved in this browser for this file. Copy buttons copy only their neighboring text. This document contains no access tokens, webhook URLs, or private keys.</footer>
+</div>
+<script>
+  document.querySelectorAll('.copy').forEach(function (button) {
+    button.addEventListener('click', function () {
+      var pre = button.parentElement.querySelector('pre');
+      navigator.clipboard.writeText(pre.innerText).then(function () {
+        var prior = button.textContent;
+        button.textContent = 'Copied';
+        setTimeout(function () { button.textContent = prior; }, 1400);
+      });
+    });
+  });
+  document.querySelectorAll('.step input[type="checkbox"]').forEach(function (box) {
+    try { box.checked = localStorage.getItem('teck-multica-guide-' + box.id) === '1'; } catch (_) {}
+    box.addEventListener('change', function () {
+      try { localStorage.setItem('teck-multica-guide-' + box.id, box.checked ? '1' : '0'); } catch (_) {}
+    });
+  });
+</script>
+</body>
+</html>

@@ -1,0 +1,15 @@
+maxNotesPerUpdate: 1
+advisors:
+  - name: Implementation watchdog
+    enabled: true
+    reviewMode: turn
+    reviewInterval: 3
+    syncBacklog: "off"
+    scope: main
+    tools: [read, grep, glob]
+    instructions: |
+      Intervene only on a concrete problem in the current task. Check whether
+      the primary agent is already diagnosing it. Do not duplicate Hopper's
+      independent code review or demand final artifacts while work is ongoing.
+      At completion, flag a claim contradicted by the actual tests, diff, or
+      linked issue record. Stay silent when the evidence is consistent.

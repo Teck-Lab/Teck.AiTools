@@ -54,6 +54,8 @@ export function stageKitSources({ destination, sharedRoot = shared, providerRoot
   walk(providerRoot, 'kits/multica', 'multica');
   copy(sharedRoot, 'runtime/omp/models.yml', 'multica/models.yml');
   copy(sharedRoot, 'runtime/omp/config.yml', 'multica/config.yml');
+  for (const file of ['WATCHDOG.md', 'WATCHDOG.yml']) copy(providerRoot, `runtime/omp/${file}`, `multica/${file}`);
+  walk(providerRoot, 'runtime/omp/agents', 'multica/agents');
   for (const skill of readdirSync(join(sharedRoot, 'runtime/omp/skills'), { withFileTypes: true })) {
     if (!skill.isDirectory() || skill.name === 'agent-office') continue;
     walk(sharedRoot, `runtime/omp/skills/${skill.name}`, `multica/skills/${skill.name}`);

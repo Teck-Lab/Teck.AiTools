@@ -38,6 +38,12 @@ capabilities:
         - command: install -o agent -g agent -m 600 /usr/local/share/teck-multica/config.yml /home/agent/.omp/agent/config.yml
           user: "0"
           description: Enable native Hindsight memory for OMP agents.
+        - command: install -o agent -g agent -m 600 /usr/local/share/teck-multica/WATCHDOG.md /home/agent/.omp/agent/WATCHDOG.md && install -o agent -g agent -m 600 /usr/local/share/teck-multica/WATCHDOG.yml /home/agent/.omp/agent/WATCHDOG.yml
+          user: "0"
+          description: Install Multica-specific OMP advisor guidance and roster.
+        - command: install -d -o agent -g agent -m 700 /home/agent/.omp/agent/agents && cp -R /usr/local/share/teck-multica/agents/. /home/agent/.omp/agent/agents/ && chown -R agent:agent /home/agent/.omp/agent/agents
+          user: "0"
+          description: Install the independent OMP quality reviewer for Multica.
         - command: install -d -o agent -g agent -m 700 /home/agent/.omp/agent/skills && cp -R /usr/local/share/teck-multica/skills/. /home/agent/.omp/agent/skills/ && chown -R agent:agent /home/agent/.omp/agent/skills
           user: "0"
           description: Install reusable OMP skills for Multica runtime discovery.

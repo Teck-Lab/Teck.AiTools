@@ -42,8 +42,12 @@ test('Multica kit uses Docker-managed OmniRoute and stages only reusable OMP ski
     assert.ok(manifest.provenance.some(row => row.destination === 'omniroute/omniroute.yaml' &&
       row.source === 'shared/kits/omniroute/omniroute.yaml'));
     assert.ok(manifest.provenance.some(row => row.destination === 'multica/skills/dotnet-best-practices/SKILL.md'));
+    for (const path of ['multica/WATCHDOG.md', 'multica/WATCHDOG.yml', 'multica/agents/quality-reviewer.md']) {
+      assert.ok(manifest.provenance.some(row => row.destination === path && row.source.startsWith('provider/runtime/omp/')), path);
+    }
     assert.ok(!manifest.provenance.some(row => row.destination.startsWith('multica/skills/agent-office/') ||
-      row.destination.startsWith('multica/extensions/')));
+      row.destination.startsWith('multica/extensions/') ||
+      row.source.startsWith('shared/runtime/omp/agents/')));
   } finally {
     rmSync(root, { recursive: true, force: true });
   }
@@ -61,10 +65,12 @@ test('Multica kit configures its URLs and watches for first-time login in the ba
     const lifecycle = mixin.capabilities.find(capability => capability.type === 'com.docker.sandbox/lifecycle@1');
     assert.match(lifecycle.config.install[1].command, /models\.yml \/home\/agent\/\.omp\/agent\/models\.yml/);
     assert.match(lifecycle.config.install[2].command, /config\.yml \/home\/agent\/\.omp\/agent\/config\.yml/);
-    assert.match(lifecycle.config.install[3].command, /\/home\/agent\/\.omp\/agent\/skills/);
-    assert.match(lifecycle.config.install[4].command, /multica config set app_url "https:\/\/\$\{\{ kit\.args\.appHost \}\}"/);
-    assert.match(lifecycle.config.install[4].command, /multica config set server_url "https:\/\/\$\{\{ kit\.args\.serverHost \}\}"/);
-    assert.equal(lifecycle.config.install[4].user, 'agent');
+    assert.match(lifecycle.config.install[3].command, /WATCHDOG\.md.*WATCHDOG\.yml/);
+    assert.match(lifecycle.config.install[4].command, /\/home\/agent\/\.omp\/agent\/agents/);
+    assert.match(lifecycle.config.install[5].command, /\/home\/agent\/\.omp\/agent\/skills/);
+    assert.match(lifecycle.config.install[6].command, /multica config set app_url "https:\/\/\$\{\{ kit\.args\.appHost \}\}"/);
+    assert.match(lifecycle.config.install[6].command, /multica config set server_url "https:\/\/\$\{\{ kit\.args\.serverHost \}\}"/);
+    assert.equal(lifecycle.config.install[6].user, 'agent');
     assert.equal(lifecycle.config.startup[0].background, true);
     assert.equal(lifecycle.config.startup[0].user, 'agent');
     assert.deepEqual(lifecycle.config.startup[0].command.slice(2), ['${{ kit.args.appHost }}', '${{ kit.args.serverHost }}']);
@@ -89,6 +95,13 @@ test('Multica kit configures its URLs and watches for first-time login in the ba
     assert.ok(!config.toJS().hindsight.apiToken);
     assert.ok(!readFileSync(join(root, 'kits', 'multica', 'multica.dockerfile'), 'utf8').includes('mcp.json'));
     assert.match(readFileSync(join(root, 'kits', 'multica', 'multica.dockerfile'), 'utf8'), /COPY skills\/ /);
+    assert.match(readFileSync(join(root, 'kits', 'multica', 'multica.dockerfile'), 'utf8'), /COPY WATCHDOG\.yml /);
+    assert.match(readFileSync(join(root, 'kits', 'multica', 'multica.dockerfile'), 'utf8'), /COPY agents\/ /);
+    const watchdog = YAML.parseDocument(readFileSync(join(root, 'kits', 'multica', 'WATCHDOG.yml'), 'utf8'));
+    const reviewer = readFileSync(join(root, 'kits', 'multica', 'agents', 'quality-reviewer.md'), 'utf8');
+    assert.deepEqual(watchdog.errors, []);
+    assert.equal(watchdog.toJS().advisors[0].name, 'Implementation watchdog');
+    assert.match(reviewer, /^---\nname: quality-reviewer/m);
   } finally {
     rmSync(root, { recursive: true, force: true });
   }
