@@ -22,3 +22,4 @@ COPY --from=build /out/ /
 COPY start-daemon.sh /usr/local/lib/teck-multica/start-daemon.sh
 COPY models.yml /usr/local/share/teck-multica/models.yml
 COPY config.yml /usr/local/share/teck-multica/config.yml
+COPY skills/ /usr/local/share/teck-multica/skills/

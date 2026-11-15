@@ -76,7 +76,7 @@ hindsight:
   recallTimeoutMs: 90000
   autoRetain: true
   mentalModelAutoSeed: false
-# HINDSIGHT_API_TOKEN comes from the Docker-managed HINDSIGHT_API_KEY placeholder.
+# Supply HINDSIGHT_API_TOKEN through the runtime's managed credential or environment.
 autolearn:
   enabled: true
 

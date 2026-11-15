@@ -1,8 +1,8 @@
 # syntax=docker/sandbox-kit:3
 schemaVersion: "3"
 kind: mixin
-displayName: MCPHub and Hindsight network access
-description: Permit Multica-managed credentials without host-side kit secrets.
+displayName: MCPHub access and Hindsight memory
+description: Multica-managed MCPHub, with Docker-managed native Hindsight memory.
 provides:
   - dk.tecklab/mcphub-access@1
 capabilities:
@@ -12,3 +12,14 @@ capabilities:
         allow:
           - mcp.tecklab.dk:443
           - hindsight-api.tecklab.dk:443
+  - type: com.docker.sandbox/credential@1
+    config:
+      service: hindsight
+      phase: runtime
+      apiKey:
+        name: HINDSIGHT_API_TOKEN
+        proxyManaged: true
+        inject:
+          - domain: hindsight-api.tecklab.dk
+            header: Authorization
+            format: "Bearer %s"

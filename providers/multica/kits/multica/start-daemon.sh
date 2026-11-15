@@ -1,6 +1,12 @@
 #!/bin/sh
 set -eu
 
+# Existing sandboxes can use a Docker custom-secret placeholder saved here.
+# The real key stays in Docker's host secret store.
+if [ -r /etc/sandbox-persistent.sh ]; then
+    . /etc/sandbox-persistent.sh
+fi
+
 app_host="${1:?Multica app host is required}"
 server_host="${2:?Multica server host is required}"
 multica config set app_url "https://$app_host"

@@ -47,13 +47,17 @@ export function stageKitSources({ destination, sharedRoot = shared, providerRoot
   copy(sharedRoot, 'kits/base/base.dockerfile', 'base/base.dockerfile');
   for (const file of ['base.yaml', 'context.md']) copy(providerRoot, `kits/base/${file}`, `base/${file}`);
   for (const name of ['omp', 'devtools', 'browser', 'kubernetes']) walk(sharedRoot, `kits/${name}`, name);
-  // Multica supplies run-time credentials. Keep the endpoint permissions,
-  // without requiring Docker host secrets for this provider's sandboxes.
-  walk(providerRoot, 'kits/omniroute', 'omniroute');
+  // The shared OmniRoute mixin binds the host-side Docker secret for every
+  // OMP run, including Multica's temporary Agent Builder.
+  walk(sharedRoot, 'kits/omniroute', 'omniroute');
   walk(providerRoot, 'kits/mcphub', 'mcphub');
   walk(providerRoot, 'kits/multica', 'multica');
   copy(sharedRoot, 'runtime/omp/models.yml', 'multica/models.yml');
   copy(sharedRoot, 'runtime/omp/config.yml', 'multica/config.yml');
+  for (const skill of readdirSync(join(sharedRoot, 'runtime/omp/skills'), { withFileTypes: true })) {
+    if (!skill.isDirectory() || skill.name === 'agent-office') continue;
+    walk(sharedRoot, `runtime/omp/skills/${skill.name}`, `multica/skills/${skill.name}`);
+  }
 
   const workload = 'runtime/kits/workload';
   for (const name of ['devtools', 'browser', 'kubernetes']) copy(sharedRoot, `${workload}/devtools.json`, `${name}/assets/devtools.json`);

@@ -6,7 +6,7 @@ The Multica web/API service is deployed separately from the sibling [Teck.Coolif
 
 ## Create directly from the published image
 
-Prerequisites: Docker Sandboxes `sbx` with v3 kit support and a reachable self-hosted Multica service. The Multica server and this kit pin v0.9.0. The OMP mixin comes directly from `../../shared/kits/omp` and pins official `@oh-my-pi/pi-coding-agent@18.20.0`.
+Prerequisites: Docker Sandboxes `sbx` with v3 kit support, a reachable self-hosted Multica service, and host-side `omniroute` and `hindsight` service secrets (`sbx secret set omniroute` and `sbx secret set hindsight`). Approve their bindings to `omniroute.tecklab.dk` and `hindsight-api.tecklab.dk` when prompted. The Multica server and this kit pin v0.9.0. The OMP mixin comes directly from `../../shared/kits/omp` and pins official `@oh-my-pi/pi-coding-agent@18.20.0`.
 
 Use the digest-pinned OCI set from the successful [kit release](https://github.com/Teck-Lab/Teck.AiTools/actions/workflows/publish-kits.yml). No Teck.AiTools checkout, downloaded script, or local kit build is needed. On PowerShell, preserve the JSON quotes when allowing GHCR:
 
@@ -41,11 +41,11 @@ Check `sbx exec -u agent teck-multica-omp-1 multica daemon status`. Multica **Ru
 
 ## OMP configuration and credentials
 
-The image copies the shared Orca OMP `config.yml` and `models.yml` verbatim. This gives OMP the Teck model roles and native Hindsight memory with automatic recall and retention, bank `teck`, and per-project tagged scoping. It includes no Orca-specific OMP skills, Orca orchestration extension, Agent Office extension, or direct MCPHub config. Multica handles agent and issue orchestration and supplies each run's assigned MCP configuration.
+The image copies the shared Orca OMP `config.yml` and `models.yml` verbatim. This gives OMP the Teck model roles and native Hindsight memory with automatic recall and retention, bank `teck`, and per-project tagged scoping. It also installs the reusable shared OMP skills in `~/.omp/agent/skills`, where OMP and Multica's **Copy from runtime** discover them. The Orca-only Agent Office skill, Orca orchestration extension, Agent Office extension, and direct MCPHub config are excluded. Multica handles agent and issue orchestration and supplies each run's assigned MCP configuration.
 
-Set `OMNIROUTE_API_KEY` and `HINDSIGHT_API_TOKEN` in each Multica OMP agent's **Environment variables**. Multica sends these values when that agent's OMP run starts. Multica currently has no workspace or runtime default for agent environment variables; its workspace library shares MCP configurations, not native OMP model or Hindsight API tokens. `MULTICA_LLM_API_KEY` in Coolify powers server-side assists and is not forwarded to OMP runs. The Multica daemon's personal access token remains a separate one-time login per sandbox. No model or Hindsight key is stored in the OCI image or Docker Sandbox secrets.
+Docker Sandbox supplies `OMNIROUTE_API_KEY` and `HINDSIGHT_API_TOKEN` to OMP as proxy-managed placeholders. Its host-side service secrets are substituted into requests to `omniroute.tecklab.dk` and `hindsight-api.tecklab.dk`; the real keys are not stored in the OCI image or guest. This applies to normal agents and Multica's temporary Agent Builder. Remove these two variables from Multica agents' **Environment variables** so old per-agent values cannot override the Docker placeholders. `MULTICA_LLM_API_KEY` in Coolify powers only server-side assists. The Multica daemon's personal access token remains a separate one-time login per sandbox.
 
-Multica's **Let AI write it** Agent Builder runs as a separate, temporary OMP agent. It does not inherit the environment variables of an existing agent or the draft agent, and `MULTICA_LLM_API_KEY` is not forwarded to it. With API-key-only OmniRoute on this runtime, use the manual agent creation form; the completed agent's environment variables then apply to its runs. The Builder needs an OMP credential available to the runtime independently of per-agent Multica variables.
+Multica's **Let AI write it** Agent Builder runs as a separate, temporary OMP agent. It does not inherit the environment variables of an existing agent or the draft agent, and `MULTICA_LLM_API_KEY` is not forwarded to it. The Docker-managed OmniRoute service credential is available to this temporary run as well.
 
 ## MCP servers managed by Multica
 
@@ -55,7 +55,7 @@ The Orca orchestration extension manages Orca Dispatches and issue-owned Orca ch
 
 ## Kit composition
 
-`scripts/kit-source.mjs` stages the shared base image and OMP, development tools, browser, Kubernetes, and the non-secret OMP model catalog and config from `../../shared`. Provider-local OmniRoute and MCPHub mixins grant network access without Docker host credential requirements. The provider adds a generic base descriptor and a Multica CLI mixin. The CLI archive is downloaded from the pinned official release and checked against its published checksum. No personal profile, model token, PAT, or session enters a kit context. The Orca and Paseo daemons and their provider-specific orchestration profiles are not installed here; Multica handles orchestration in its own server and invokes OMP itself.
+`scripts/kit-source.mjs` stages the shared base image and OMP, development tools, browser, Kubernetes, OmniRoute credential mixin, non-secret OMP model catalog/config, and reusable skills from `../../shared`. The provider-local MCPHub mixin grants MCPHub network access through Multica and binds Docker's native Hindsight credential. The provider adds a generic base descriptor and a Multica CLI mixin. The CLI archive is downloaded from the pinned official release and checked against its published checksum. No personal profile, model token, PAT, or session enters a kit context. The Orca and Paseo daemons and their provider-specific orchestration profiles are not installed here; Multica handles orchestration in its own server and invokes OMP itself.
 
 The local source build of the full devtools/browser/Kubernetes kit needs substantial temporary space in the shared `sbx-kit-builder`. In that mode the script checks for at least 32 GiB total and 12 GiB free, and creates a 40 GiB builder only if none exists. It does not prune an existing builder. Both sandboxes share cached image layers while keeping independent writable state.
 
