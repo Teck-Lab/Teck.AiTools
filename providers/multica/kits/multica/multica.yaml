@@ -54,5 +54,5 @@ capabilities:
         - command: [/bin/sh, /usr/local/lib/teck-multica/start-daemon.sh, "${{ kit.args.appHost }}", "${{ kit.args.serverHost }}"]
           user: agent
           background: true
-          env: [TECK_MULTICA_SANDBOX_NAME, SANDBOX_NAME]
+          env: [TECK_MULTICA_SANDBOX_NAME, SANDBOX_NAME, MULTICA_DAEMON_ID]
           description: Configure Multica and start its daemon automatically once authenticated.
