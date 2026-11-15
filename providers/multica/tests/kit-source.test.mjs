@@ -24,6 +24,10 @@ test('Multica kit permits MCPHub, Hindsight, and OmniRoute without host-side cre
       capability.config.runtime.allow.includes('hindsight-api.tecklab.dk:443')));
     assert.ok(capabilities.some(capability => capability.type === 'com.docker.sandbox/network-policy@1' &&
       capability.config.runtime.allow.includes('omniroute.tecklab.dk:443')));
+    for (const host of ['api.anthropic.com:443', 'api.openai.com:443', 'api.openrouter.ai:443', 'generativelanguage.googleapis.com:443']) {
+      assert.ok(capabilities.some(capability => capability.type === 'com.docker.sandbox/network-policy@1' &&
+        capability.config.runtime.allow.includes(host)), `${host} is not allowed`);
+    }
     for (const name of kitNames) {
       const descriptor = YAML.parseDocument(readFileSync(join(root, 'kits', name, `${name}.yaml`), 'utf8'));
       assert.deepEqual(descriptor.errors, []);
