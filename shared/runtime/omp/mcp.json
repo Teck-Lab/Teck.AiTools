@@ -9,7 +9,7 @@
     },
     "github": {
       "type": "http",
-      "url": "https://mcp.tecklab.dk/mcp/github?features=issue_dependencies",
+      "url": "https://mcp.tecklab.dk/mcp/github",
       "headers": {
         "Authorization": "Bearer ${MCPHUB_API_KEY}"
       },
