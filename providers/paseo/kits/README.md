@@ -29,9 +29,13 @@ No model tokens, user profiles or conversations enter a build context.
 `scripts/kit-source.mjs` stages isolated contexts from these definitions and
 canonical `runtime/` assets. It records source and staged-content hashes. Kit
 dependencies use `provides` and `requires`; list order is not an override policy.
-The evaluation builds local source kits in Docker's kit builder. Existing
-sandboxes retain their image and ownership record. A production release still
-needs signed OCI kit receipts and validation on both architectures.
+The evaluation builds local source kits in Docker's kit builder. CI can publish
+each staged component to GHCR with a `sha-<commit>` tag. After collecting the
+reported Buildx digests, `scripts/oci-release.mjs set` generates a v3 set
+descriptor pinned to those exact components. The set excludes the inactive
+Office component. Published kits avoid a source-kit build on the consuming
+machine; existing sandboxes retain their image and ownership record. A
+production release still needs registry publication and sandbox validation.
 
 The Office component is left out of the active composition because there is
 no Office endpoint in the guest yet. The source remains staged for its later

@@ -1,0 +1,205 @@
+name: Publish Docker Sandbox kits
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - .github/workflows/publish-kits.yml
+      - providers/**
+      - shared/**
+      - tools/**
+      - package.json
+  workflow_dispatch:
+    inputs:
+      provider:
+        description: Provider to publish from the current main commit
+        type: choice
+        options: [all, orca, paseo, multica]
+        default: all
+
+permissions:
+  contents: read
+
+concurrency:
+  group: publish-kits-${{ github.sha }}
+  cancel-in-progress: false
+
+jobs:
+  plan:
+    if: github.repository == 'Teck-Lab/Teck.AiTools' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-24.04
+    outputs:
+      components: ${{ steps.plan.outputs.components }}
+      providers: ${{ steps.plan.outputs.providers }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '24'
+      - name: Plan provider components
+        id: plan
+        env:
+          SELECTED_PROVIDER: ${{ inputs.provider || 'all' }}
+        run: node tools/oci-plan.mjs "$SELECTED_PROVIDER"
+
+  components:
+    needs: plan
+    runs-on: ubuntu-24.04
+    timeout-minutes: 180
+    strategy:
+      fail-fast: false
+      max-parallel: 3
+      matrix: ${{ fromJSON(needs.plan.outputs.components) }}
+    permissions:
+      contents: read
+      packages: write
+      id-token: write
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - name: Reserve space on disposable runner
+        run: bash providers/orca/scripts/kit-ci-disk.sh
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '24'
+      - uses: docker/setup-qemu-action@v3
+      - uses: docker/setup-buildx-action@v4
+      - uses: docker/login-action@v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - uses: sigstore/cosign-installer@v4.1.3
+      - name: Stage provider kit source
+        id: stage
+        env:
+          PROVIDER: ${{ matrix.provider }}
+          COMPONENT: ${{ matrix.name }}
+        run: |
+          if [[ "$PROVIDER" == multica ]]; then
+            node providers/multica/scripts/kit-source.mjs --out "$RUNNER_TEMP/kits"
+          else
+            node tools/materialize.mjs "$PROVIDER"
+            node "build/$PROVIDER/scripts/kit-source.mjs" --out "$RUNNER_TEMP/kits"
+          fi
+          echo "context=$RUNNER_TEMP/kits/$COMPONENT" >> "$GITHUB_OUTPUT"
+          echo "file=$RUNNER_TEMP/kits/$COMPONENT/$COMPONENT.yaml" >> "$GITHUB_OUTPUT"
+      - name: Build and publish component
+        id: build
+        uses: docker/build-push-action@v7
+        with:
+          context: ${{ steps.stage.outputs.context }}
+          file: ${{ steps.stage.outputs.file }}
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: ghcr.io/teck-lab/teck-aitools-${{ matrix.provider }}/${{ matrix.name }}:sha-${{ github.sha }}
+          labels: |
+            org.opencontainers.image.source=https://github.com/Teck-Lab/Teck.AiTools
+            org.opencontainers.image.revision=${{ github.sha }}
+          provenance: mode=max
+          sbom: true
+          cache-from: type=gha,scope=${{ matrix.provider }}-${{ matrix.name }}
+          cache-to: type=gha,scope=${{ matrix.provider }}-${{ matrix.name }},mode=max
+      - name: Sign, verify, and record component
+        env:
+          PROVIDER: ${{ matrix.provider }}
+          COMPONENT: ${{ matrix.name }}
+          DIGEST: ${{ steps.build.outputs.digest }}
+          TAG: sha-${{ github.sha }}
+        run: |
+          ref="ghcr.io/teck-lab/teck-aitools-$PROVIDER/$COMPONENT:$TAG"
+          cosign sign --yes "$ref@$DIGEST"
+          cosign verify --certificate-identity "https://github.com/Teck-Lab/Teck.AiTools/.github/workflows/publish-kits.yml@$GITHUB_REF" --certificate-oidc-issuer https://token.actions.githubusercontent.com "$ref@$DIGEST" > /dev/null
+          mkdir -p receipts
+          node --input-type=module <<'NODE'
+          import { writeFileSync } from 'node:fs';
+          const { PROVIDER, COMPONENT, DIGEST, TAG } = process.env;
+          if (!/^sha256:[a-f0-9]{64}$/.test(DIGEST)) throw Error('Buildx did not report an image digest');
+          const receipt = { name: COMPONENT, ref: `ghcr.io/teck-lab/teck-aitools-${PROVIDER}/${COMPONENT}:${TAG}`, digest: DIGEST };
+          writeFileSync(`receipts/${COMPONENT}.json`, JSON.stringify(receipt, null, 2) + '\n');
+          NODE
+      - uses: actions/upload-artifact@v4
+        with:
+          name: kit-${{ matrix.provider }}-${{ matrix.name }}
+          path: receipts/${{ matrix.name }}.json
+          if-no-files-found: error
+
+  sets:
+    needs: [plan, components]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 180
+    strategy:
+      fail-fast: false
+      max-parallel: 3
+      matrix: ${{ fromJSON(needs.plan.outputs.providers) }}
+    permissions:
+      contents: read
+      packages: write
+      id-token: write
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - name: Reserve space on disposable runner
+        run: bash providers/orca/scripts/kit-ci-disk.sh
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '24'
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: kit-${{ matrix.provider }}-*
+          path: receipts
+          merge-multiple: true
+      - name: Compose digest-pinned set
+        id: compose
+        env:
+          PROVIDER: ${{ matrix.provider }}
+          TAG: sha-${{ github.sha }}
+        run: |
+          mkdir -p "$RUNNER_TEMP/oci-set"
+          node "providers/$PROVIDER/scripts/oci-release.mjs" set --tag "$TAG" --receipts receipts --out "$RUNNER_TEMP/oci-set/$PROVIDER.yaml"
+          echo "context=$RUNNER_TEMP/oci-set" >> "$GITHUB_OUTPUT"
+          echo "file=$RUNNER_TEMP/oci-set/$PROVIDER.yaml" >> "$GITHUB_OUTPUT"
+      - uses: docker/setup-qemu-action@v3
+      - uses: docker/setup-buildx-action@v4
+      - uses: docker/login-action@v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - uses: sigstore/cosign-installer@v4.1.3
+      - name: Build and publish provider set
+        id: build
+        uses: docker/build-push-action@v7
+        with:
+          context: ${{ steps.compose.outputs.context }}
+          file: ${{ steps.compose.outputs.file }}
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: ghcr.io/teck-lab/teck-aitools-${{ matrix.provider }}:sha-${{ github.sha }}
+          labels: |
+            org.opencontainers.image.source=https://github.com/Teck-Lab/Teck.AiTools
+            org.opencontainers.image.revision=${{ github.sha }}
+          provenance: mode=max
+          sbom: true
+      - name: Sign, verify, and report set
+        env:
+          PROVIDER: ${{ matrix.provider }}
+          DIGEST: ${{ steps.build.outputs.digest }}
+          TAG: sha-${{ github.sha }}
+        run: |
+          ref="ghcr.io/teck-lab/teck-aitools-$PROVIDER:$TAG"
+          cosign sign --yes "$ref@$DIGEST"
+          cosign verify --certificate-identity "https://github.com/Teck-Lab/Teck.AiTools/.github/workflows/publish-kits.yml@$GITHUB_REF" --certificate-oidc-issuer https://token.actions.githubusercontent.com "$ref@$DIGEST" > /dev/null
+          printf '### %s Docker Sandbox kit\n\n`%s@%s`\n\n' "$PROVIDER" "$ref" "$DIGEST" >> "$GITHUB_STEP_SUMMARY"
+          printf '%s@%s\n' "$ref" "$DIGEST" > "$RUNNER_TEMP/oci-set/image-ref.txt"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: kit-set-${{ matrix.provider }}
+          path: |
+            ${{ steps.compose.outputs.file }}
+            ${{ runner.temp }}/oci-set/image-ref.txt
+          if-no-files-found: error

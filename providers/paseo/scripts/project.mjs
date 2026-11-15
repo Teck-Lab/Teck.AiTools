@@ -10,6 +10,12 @@ const repository = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const stateRoot = join(process.env.LOCALAPPDATA ?? process.env.HOME ?? '', 'Teck.Paseo', 'projects');
 const projectRoot = '/home/agent/project';
 const kitNames = ['omp', 'devtools', 'browser', 'kubernetes', 'workflow', 'omniroute', 'mcphub', 'paseo'];
+const publishedKitPattern = /^ghcr\.io\/teck-lab\/teck-aitools-paseo:sha-[a-f0-9]{40}(?:@sha256:[a-f0-9]{64})?$/;
+
+export function validatePublishedKitRef(reference) {
+  if (reference !== null && !publishedKitPattern.test(reference)) throw Error('Use a published Paseo sha-<commit> OCI kit reference');
+  return reference;
+}
 
 export function sandboxName(id) {
   if (typeof id !== 'string' || !id.trim() || /[\r\n\0]/.test(id)) throw Error('A stable project ID is required');
@@ -64,34 +70,40 @@ function run(command, args, options = {}) {
   return execFileSync(command, args, { encoding: 'utf8', stdio: options.capture ? 'pipe' : 'inherit', ...options }) ?? '';
 }
 
-export function ensureOwned(project, rows, state) {
+export function ensureOwned(project, rows, state, kitRef = null) {
   const name = sandboxName(project.id);
   const current = rows.find(row => row.name === name);
   if (current && !state) throw Error(`Sandbox ${name} exists without a Teck.Paseo ownership record`);
   if (state && (state.version !== 1 || state.projectId !== project.id || state.sandboxName !== name || state.cloneUrl !== project.cloneUrl ||
-    (project.cloneUrl === null && state.sourcePath !== project.sourcePath))) throw Error('Sandbox ownership record does not match this project');
+    (project.cloneUrl === null && state.sourcePath !== project.sourcePath) || (state.kitRef ?? null) !== kitRef)) throw Error('Sandbox ownership record does not match this project');
   if (current && state.sandboxId !== current.id) throw Error('Sandbox identity changed; refusing to adopt or replace it');
   if (state && !current && (state.phase !== 'creating' || state.sandboxId !== null)) throw Error('Owned sandbox is missing; refusing automatic replacement');
   return current;
 }
 
-export async function provision(project, { command = run, source = repository, root = stateRoot } = {}) {
+export async function provision(project, { command = run, source = repository, root = stateRoot, kitRef = process.env.TECK_PASEO_KIT_REF ?? null } = {}) {
   validateProject(project);
+  validatePublishedKitRef(kitRef);
   const name = sandboxName(project.id);
   const path = join(root, name + '.json');
   const state = existsSync(path) ? JSON.parse(readFileSync(path, 'utf8')) : null;
   command('sbx', ['setup', 'ssh']);
-  const current = ensureOwned(project, inventory(command), state);
+  const current = ensureOwned(project, inventory(command), state, kitRef);
   if (!current) {
-    const stage = join(root, 'staged-kits', `${name}-${Date.now()}`);
-    stageKitSources({ source, destination: stage });
+    let kits;
+    if (kitRef) kits = [kitRef];
+    else {
+      const stage = join(root, 'staged-kits', `${name}-${Date.now()}`);
+      stageKitSources({ source, destination: stage });
+      kits = [join(stage, 'base'), ...kitNames.flatMap(kit => ['--kit', join(stage, kit)])];
+    }
     mkdirSync(root, { recursive: true });
-    writeFileSync(path, JSON.stringify({ version: 1, projectId: project.id, sandboxName: name, cloneUrl: project.cloneUrl, sourcePath: project.cloneUrl === null ? project.sourcePath : undefined, sandboxId: null, phase: 'creating' }, null, 2) + '\n');
-    const args = ['create', '--no-progress', '--name', name, '--cpus', String(project.cpus), '--memory', project.memory, '--skills', 'off', join(stage, 'base'), ...kitNames.flatMap(kit => ['--kit', join(stage, kit)])];
+    writeFileSync(path, JSON.stringify({ version: 1, projectId: project.id, sandboxName: name, cloneUrl: project.cloneUrl, sourcePath: project.cloneUrl === null ? project.sourcePath : undefined, kitRef, sandboxId: null, phase: 'creating' }, null, 2) + '\n');
+    const args = ['create', '--no-progress', '--name', name, '--cpus', String(project.cpus), '--memory', project.memory, '--skills', 'off', ...kits];
     command('sbx', args);
     const created = inventory(command).find(row => row.name === name);
     if (!created) throw Error('Sandbox create returned without an inventory identity');
-    writeFileSync(path, JSON.stringify({ version: 1, projectId: project.id, sandboxName: name, cloneUrl: project.cloneUrl, sourcePath: project.cloneUrl === null ? project.sourcePath : undefined, sandboxId: created.id, phase: 'created' }, null, 2) + '\n');
+    writeFileSync(path, JSON.stringify({ version: 1, projectId: project.id, sandboxName: name, cloneUrl: project.cloneUrl, sourcePath: project.cloneUrl === null ? project.sourcePath : undefined, kitRef, sandboxId: created.id, phase: 'created' }, null, 2) + '\n');
   }
   command('sbx', ['run', '--detach', '--name', name]);
   const verified = inventory(command).find(row => row.name === name);
@@ -117,7 +129,7 @@ export async function provision(project, { command = run, source = repository, r
 
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
   const [action, value] = process.argv.slice(2);
-  if (!value) throw Error('Usage: node scripts/project.mjs provision-path <project-directory>');
-  if (action !== 'provision-path') throw Error('Usage: node scripts/project.mjs provision-path <project-directory>');
-  console.log('TECK_PASEO_RESULT=' + JSON.stringify(await provision(projectFromPath(value))));
+  const options = process.argv.slice(4);
+  if (!value || action !== 'provision-path' || (options.length && (options.length !== 2 || options[0] !== '--kit-ref'))) throw Error('Usage: node scripts/project.mjs provision-path <project-directory> [--kit-ref OCI_REFERENCE]');
+  console.log('TECK_PASEO_RESULT=' + JSON.stringify(await provision(projectFromPath(value), { kitRef: options[1] ?? process.env.TECK_PASEO_KIT_REF ?? null })));
 }

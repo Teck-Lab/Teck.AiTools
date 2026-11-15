@@ -36,3 +36,22 @@ Edit common files under `shared/`. Edit provider-only files and full overrides u
 `verify:import` compares the imported files to those sibling working trees. It is intended for the initial migration check; it will report differences once either old repository changes independently.
 
 The Multica server deployment belongs in `Teck.Coolify/src/multica`; the [Multica provider](providers/multica/README.md) here owns two long-lived Docker Sandboxes (`sbx`) using the shared kits and Multica daemon overlay. Multica's own code and images remain upstream because its license has additional restrictions.
+
+## Published Docker Sandbox kits
+
+The [Publish Docker Sandbox kits](.github/workflows/publish-kits.yml) action builds the v3 components for Orca, Paseo, and Multica, then publishes one digest-pinned workload set per provider to GHCR. It runs after kit source changes on `main`; Actions can also run it manually for one provider. Each set is tagged `sha-<full AiTools commit>` and the job summary gives the immutable `@sha256:` reference. The images contain no personal credentials or local repository files.
+
+| Provider | Published workload set |
+| --- | --- |
+| Orca | `ghcr.io/teck-lab/teck-aitools-orca:sha-<commit>` |
+| Paseo | `ghcr.io/teck-lab/teck-aitools-paseo:sha-<commit>` |
+| Multica | `ghcr.io/teck-lab/teck-aitools-multica:sha-<commit>` |
+
+The local `sbx` host must allow GHCR kit sources. If the package is private, configure a host-side GHCR registry credential too; public packages need no credential. Use the exact digest from a successful Actions summary when creating a sandbox. For example, after a Multica set is published:
+
+```powershell
+sbx settings set kit.allowedSources '["docker.io/","ghcr.io/teck-lab/"]'
+sbx create --name teck-multica-omp-1 --skills off --kit-arg appHost=multica.tecklab.dk --kit-arg serverHost=multica.tecklab.dk ghcr.io/teck-lab/teck-aitools-multica@sha256:<published-digest>
+```
+
+Omitting a workspace path keeps the sandbox's files inside the sandbox. A published kit avoids the local source-kit build and its 40 GiB builder, though the sandbox and pulled image still consume local disk. Existing sandboxes retain their original kit; publishing a new image does not upgrade them. Orca's separate plugin release lock and GUI integration also remain separate from this OCI publication.

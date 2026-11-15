@@ -73,7 +73,30 @@ For CLI maintenance, the same project-aware path is available:
 node scripts/project.mjs provision-path C:\Users\jacob\Documents\Repos\Teck.Monorepo
 ```
 
-The provisioner stages the local kit source, creates a new VM only when the
+To create a new project sandbox from a published kit set, pass an immutable
+`ghcr.io/teck-lab/teck-aitools-paseo:sha-COMMIT@sha256:DIGEST` reference with
+`--kit-ref`, or set `TECK_PASEO_KIT_REF` to that reference. The provisioner then
+pulls the OCI kit instead of staging or building local kit sources. The project
+identity and existing-sandbox reuse rules are unchanged; an existing sandbox
+keeps the kit it was created with. Docker Sandboxes must allow `ghcr.io/teck-lab/`
+as a kit source, and private packages need a host registry credential. The
+published kit is usable directly with `sbx create` from any directory, but this
+project-aware provisioner still needs its local script and Kubernetes assets
+to perform project registration and cluster setup.
+
+For a direct image-based sandbox, copy the exact tag and digest from the
+published GHCR set, then run from any directory:
+
+```powershell
+$kitRef = 'ghcr.io/teck-lab/teck-aitools-paseo:sha-COMMIT@sha256:DIGEST'
+sbx create --name paseo-evaluation --cpus 8 --memory 16g --skills off $kitRef
+```
+
+Replace `COMMIT` and `DIGEST` with the actual values. The direct command does
+not perform the project clone, Paseo registration or managed Kubernetes setup.
+
+By default, the provisioner stages the local kit source. With `--kit-ref`, it
+pulls the published kit set. It creates a new VM only when the
 project has no owned sandbox, records the Docker identity, starts the guest
 daemon, installs the exact official OMP package, clones the project once,
 registers it in Paseo and starts the configured persistent KIND cluster.
@@ -85,7 +108,7 @@ Paseo's native New workspace plugin fields cannot change the selected host.
 Use the Project sandboxes action to place a project on its matching sandbox;
 the native host picker still allows unrelated project and host combinations.
 
-The staged kit set includes Teck.Orca's base, OMP, development tools, browser,
+The active kit set includes Teck.Orca's base, OMP, development tools, browser,
 Kubernetes, workflow, OmniRoute and MCPHub components. Orca-specific worker
 skills are omitted; Paseo rules and skills are applied as an overlay. The
 Agent Office component is staged but not active because the guest has no
@@ -99,8 +122,8 @@ targets a different host and provider setup, so this project uses Docker's
 
 Run `npm run test:project` for the ownership checks. The 2026-11-15 source
 composition built and started on Docker Sandboxes 0.51.0, and the official OMP
-provider completed a real smoke turn. This is a local source-kit evaluation;
-the kit set is not yet a signed, published OCI release. The former custom
+provider completed a real smoke turn. That running sandbox still uses local
+source kits; adding an OCI publication workflow does not replace it. The former custom
 provider and per-worktree launcher are no longer part of this repo. The former
 directory plugin was removed from the Windows Paseo daemon; its uncommitted
 source was backed up under the local temp directory before removal.
