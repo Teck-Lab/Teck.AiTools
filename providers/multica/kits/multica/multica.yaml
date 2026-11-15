@@ -30,6 +30,9 @@ capabilities:
         - command: install -d -o agent -g agent -m 700 /home/agent/.multica /home/agent/multica_workspaces
           user: "0"
           description: Initialize Multica state and run directories without credentials.
+        - command: multica config set app_url "https://${{ kit.args.appHost }}" && multica config set server_url "https://${{ kit.args.serverHost }}"
+          user: agent
+          description: Configure the self-hosted Multica server before the first login.
       startup:
         - command: /bin/sh /usr/local/lib/teck-multica/start-daemon.sh
           user: agent

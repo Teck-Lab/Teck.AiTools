@@ -52,6 +52,9 @@ test('Multica kit configures its URLs and watches for first-time login in the ba
     assert.equal(mixin.args.appHost.env, 'TECK_MULTICA_APP_HOST');
     assert.equal(mixin.args.serverHost.env, 'TECK_MULTICA_SERVER_HOST');
     const lifecycle = mixin.capabilities.find(capability => capability.type === 'com.docker.sandbox/lifecycle@1');
+    assert.match(lifecycle.config.install[1].command, /multica config set app_url "https:\/\/\$\{\{ kit\.args\.appHost \}\}"/);
+    assert.match(lifecycle.config.install[1].command, /multica config set server_url "https:\/\/\$\{\{ kit\.args\.serverHost \}\}"/);
+    assert.equal(lifecycle.config.install[1].user, 'agent');
     assert.equal(lifecycle.config.startup[0].background, true);
     assert.equal(lifecycle.config.startup[0].user, 'agent');
     const script = readFileSync(join(root, 'kits', 'multica', 'start-daemon.sh'), 'utf8');

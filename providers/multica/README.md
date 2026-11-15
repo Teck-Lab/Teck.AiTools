@@ -12,11 +12,10 @@ Use the digest-pinned OCI set from the successful [kit release](https://github.c
 
 ```powershell
 sbx settings set kit.allowedSources '[\"docker.io/\",\"dhi.io/\",\"ghcr.io/teck-lab/\"]'
-sbx create --name teck-multica-omp-1 --skills off --env TECK_MULTICA_SANDBOX_NAME=teck-multica-omp-1 --kit-arg appHost=multica.tecklab.dk --kit-arg serverHost=multica.tecklab.dk 'ghcr.io/teck-lab/teck-aitools-multica@sha256:<published-digest>'
-sbx run --detach --name teck-multica-omp-1
+& { $name = 'teck-multica-omp-1'; sbx create --name $name --skills off --env "TECK_MULTICA_SANDBOX_NAME=$name" --kit-arg appHost=multica.tecklab.dk --kit-arg serverHost=multica.tecklab.dk 'ghcr.io/teck-lab/teck-aitools-multica@sha256:<published-digest>'; if ($LASTEXITCODE -ne 0) { throw 'Sandbox creation failed' }; sbx run --detach --name $name; if ($LASTEXITCODE -ne 0) { throw 'Sandbox start failed' }; sbx exec -it -u agent $name multica login --token; if ($LASTEXITCODE -ne 0) { throw 'Multica login failed' } }
 ```
 
-Replace `<published-digest>` with the digest from the release summary. This creates one long-lived sandbox without a host workspace mount and without starting `sbx-kit-builder`. To create a second, repeat the `sbx create` and `sbx run` commands with `teck-multica-omp-2`. To reuse one, run `sbx run --detach --name teck-multica-omp-1`. If the GHCR package is private, configure an `sbx` registry credential before creation.
+Replace `<published-digest>` with the digest from the release summary. The second line is one PowerShell command: it creates one long-lived sandbox without a host workspace mount or `sbx-kit-builder`, starts it, and prompts for the Multica PAT. The PAT does not appear in the command or the OCI image. To create a second sandbox, repeat that line with `teck-multica-omp-2`. To reuse one, run `sbx run --detach --name teck-multica-omp-1`. If the GHCR package is private, configure an `sbx` registry credential before creation.
 
 Optional `--cpus 8 --memory 16g` sets size at creation. The image still takes disk space when pulled and each sandbox has its own writable state.
 
@@ -36,13 +35,7 @@ Ownership records live under the local `Teck.AiTools/multica` app-data directory
 
 ## Authenticate and connect the sandbox
 
-The image configures the Multica app and server URLs from the two kit arguments on every start. Its background hook starts the daemon as soon as it sees a valid login, and starts it again after later sandbox restarts. For the first connection, create a personal access token in your self-hosted Multica **Settings → API Token**, then enter it at the prompt inside each sandbox:
-
-```powershell
-sbx exec -it -u agent teck-multica-omp-1 multica login --token
-```
-
-Repeat the login command with `teck-multica-omp-2` if you created a second sandbox. Paste the token interactively; it is saved in the sandbox's guest home. Multica requires this first-time user authorization for self-hosted daemons; an OCI image cannot carry your personal token. The daemon normally appears within 15 seconds after login. OAuth-based OMP provider accounts still require their own local login. For API-key-based OMP providers, use Multica agent environment variables instead, as below.
+The image configures the Multica app and server URLs from the two kit arguments during creation and on every later start. The single creation command above prompts for your personal access token from **Settings → API Token**; paste it interactively. It is saved in the sandbox's guest home. The background hook starts the daemon as soon as it sees that login, and restarts it after later sandbox starts. Multica requires this first-time user authorization for self-hosted daemons; an OCI image cannot carry your personal token. The daemon normally appears within 15 seconds after login. OAuth-based OMP provider accounts still require their own local login. For API-key-based OMP providers, use Multica agent environment variables instead, as below.
 
 Check `sbx exec -u agent teck-multica-omp-1 multica daemon status`. Multica **Runtimes** should show the sandbox computer with OMP. Create or edit Multica agents and bind them to that runtime. Project resources select the repository; Multica's run directories and caches live in each sandbox and follow [Multica's retention rules](https://multica.ai/docs/daemon-runtimes).
 
