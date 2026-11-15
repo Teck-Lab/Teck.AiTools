@@ -12,9 +12,11 @@ args:
   appHost:
     required: true
     pattern: '^[A-Za-z0-9.-]+$'
+    env: TECK_MULTICA_APP_HOST
   serverHost:
     required: true
     pattern: '^[A-Za-z0-9.-]+$'
+    env: TECK_MULTICA_SERVER_HOST
 capabilities:
   - type: com.docker.sandbox/network-policy@1
     config:
@@ -31,4 +33,6 @@ capabilities:
       startup:
         - command: /bin/sh /usr/local/lib/teck-multica/start-daemon.sh
           user: agent
-          description: Start the Multica daemon when this sandbox has been authenticated.
+          background: true
+          env: [TECK_MULTICA_APP_HOST, TECK_MULTICA_SERVER_HOST, TECK_MULTICA_SANDBOX_NAME, SANDBOX_NAME]
+          description: Configure Multica and start its daemon automatically once authenticated.

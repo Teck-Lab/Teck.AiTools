@@ -1,0 +1,13 @@
+# syntax=docker/sandbox-kit:3
+schemaVersion: "3"
+kind: mixin
+displayName: OmniRoute network access
+description: Permit a Multica-managed OmniRoute key without a host-side kit secret.
+provides:
+  - dk.tecklab/omniroute-access@1
+capabilities:
+  - type: com.docker.sandbox/network-policy@1
+    config:
+      runtime:
+        allow:
+          - omniroute.tecklab.dk:443

@@ -27,35 +27,34 @@ This is for changing and testing the kit sources. Running the published image ab
 ```sh
 node scripts/pool.mjs ensure \
   --app-url https://multica.example.com \
-  --server-url wss://multica.example.com/ws
+  --server-url https://multica.example.com
 ```
 
-Replace the example URLs with the Coolify deployment URLs. Both may share one hostname when `/ws` routes to Multica's backend. Without `--kit-ref`, the command stages shared kit sources temporarily, validates them, checks the shared kit builder's free space, and builds the kits locally before creating missing sandboxes. Repeat the command to reuse the same two sandbox IDs.
+Replace the example URLs with the Coolify deployment HTTPS origins. Both may share one hostname; Multica handles its WebSocket route itself. Without `--kit-ref`, the command stages shared kit sources temporarily, validates them, checks the shared kit builder's free space, and builds the kits locally before creating missing sandboxes. Repeat the command to reuse the same two sandbox IDs.
 
 Ownership records live under the local `Teck.AiTools/multica` app-data directory. If a name exists without a matching record, or an owned sandbox disappears or changes ID, the command stops instead of adopting/replacing it. It never removes a sandbox, volume, or kit builder. Staged kit files are removed after the local create operation; shared source files stay in this repository.
 
 ## Authenticate and connect the sandbox
 
-Create a personal access token in your self-hosted Multica **Settings → API Tokens**. Configure the CLI and log in inside each sandbox:
+The image configures the Multica app and server URLs from the two kit arguments on every start. Its background hook starts the daemon as soon as it sees a valid login, and starts it again after later sandbox restarts. For the first connection, create a personal access token in your self-hosted Multica **Settings → API Token**, then enter it at the prompt inside each sandbox:
 
 ```powershell
-sbx exec -u agent teck-multica-omp-1 multica config set app_url https://multica.tecklab.dk
-sbx exec -u agent teck-multica-omp-1 multica config set server_url wss://multica.tecklab.dk/ws
 sbx exec -it -u agent teck-multica-omp-1 multica login --token
-sbx exec -u agent teck-multica-omp-1 sh /usr/local/lib/teck-multica/start-daemon.sh
 ```
 
-Repeat those commands with `teck-multica-omp-2` if you created a second sandbox. Paste the token interactively; it is saved in the sandbox's guest home. The kit startup hook restarts the daemon after future sandbox starts when authentication is valid. Configure OMP's model/provider login inside each sandbox, for example `sbx exec -it -u agent teck-multica-omp-1 omp`. OMP's own state remains in each persistent sandbox.
+Repeat the login command with `teck-multica-omp-2` if you created a second sandbox. Paste the token interactively; it is saved in the sandbox's guest home. Multica requires this first-time user authorization for self-hosted daemons; an OCI image cannot carry your personal token. The daemon normally appears within 15 seconds after login. OAuth-based OMP provider accounts still require their own local login. For API-key-based OMP providers, use Multica agent environment variables instead, as below.
 
 Check `sbx exec -u agent teck-multica-omp-1 multica daemon status`. Multica **Runtimes** should show the sandbox computer with OMP. Create or edit Multica agents and bind them to that runtime. Project resources select the repository; Multica's run directories and caches live in each sandbox and follow [Multica's retention rules](https://multica.ai/docs/daemon-runtimes).
 
-## Configure MCP once in Multica
+## Provide run-time credentials through Multica
 
-The Multica image allows outbound access to `mcp.tecklab.dk` and `hindsight-api.tecklab.dk` without requesting host-side secrets. In Multica, add each remote MCP server under **Settings → MCP servers**, including its `Authorization: Bearer <token>` header, then assign it on each OMP agent's **MCP** tab. Multica sends that configuration to the sandbox daemon for each run. The token is stored by the Multica server and reaches the agent runtime; it is not stored in the OCI image. The shared OMP `mcp.json` is not included in this image, so it cannot override the Multica-managed entry. If an agent calls Hindsight directly, give that agent `HINDSIGHT_API_KEY` in Multica's environment settings.
+The Multica image allows outbound access to `mcp.tecklab.dk`, `hindsight-api.tecklab.dk`, and `omniroute.tecklab.dk` without Docker host secrets. For MCPHub, add each remote MCP server under **Settings → MCP servers**, including its `Authorization: Bearer <token>` header, then assign it on each OMP agent's **MCP** tab. Multica sends the configuration to OMP for each run. The shared OMP `mcp.json` is not included in this image, so it cannot override the Multica-managed entry.
+
+For direct service calls or API-key-based OMP model providers, put the relevant key in the Multica agent's **Environment variables**: `HINDSIGHT_API_KEY`, `OMNIROUTE_API_KEY`, `MCPHUB_API_KEY` (for Teck's direct MCPHub extensions), `ANTHROPIC_API_KEY`, `OPENAI_API_KEY`, or the corresponding OMP provider variable. These arrive when that agent's OMP process starts. An agent key does not become a daemon-wide login or configure the Docker host, and model discovery can still require local OMP credentials; leave the Multica model unset or configure OMP in the sandbox if the picker cannot see the model. Multica stores these values in plaintext in its server database, restricts value reads to workspace owners/admins, and sends them to the runtime for runs. Use narrowly scoped keys. The Multica daemon's own personal access token still has to be enrolled once per sandbox as above.
 
 ## Kit composition
 
-`scripts/kit-source.mjs` stages the shared base image and OMP, development tools, browser, Kubernetes, OmniRoute, and MCPHub mixins from `../../shared`. The provider adds a generic base descriptor and a Multica CLI mixin. The CLI archive is downloaded from the pinned official release and checked against its published checksum. No personal profile, model token, PAT, or session enters a kit context. The Orca and Paseo daemons and their provider-specific orchestration profiles are not installed here; Multica handles orchestration in its own server and invokes OMP itself.
+`scripts/kit-source.mjs` stages the shared base image and OMP, development tools, browser, and Kubernetes mixins from `../../shared`. Provider-local OmniRoute and MCPHub mixins retain network permissions without Docker host credential requirements. The provider adds a generic base descriptor and a Multica CLI mixin. The CLI archive is downloaded from the pinned official release and checked against its published checksum. No personal profile, model token, PAT, or session enters a kit context. The Orca and Paseo daemons and their provider-specific orchestration profiles are not installed here; Multica handles orchestration in its own server and invokes OMP itself.
 
 The local source build of the full devtools/browser/Kubernetes kit needs substantial temporary space in the shared `sbx-kit-builder`. In that mode the script checks for at least 32 GiB total and 12 GiB free, and creates a 40 GiB builder only if none exists. It does not prune an existing builder. Both sandboxes share cached image layers while keeping independent writable state.
 

@@ -17,13 +17,13 @@ export function validateConfig(config) {
   const app = new URL(config.appUrl);
   const server = new URL(config.serverUrl);
   if (app.protocol !== 'https:' || app.username || app.password || app.search || app.hash || app.pathname !== '/') throw Error('appUrl must be an HTTPS origin without credentials or a path');
-  if (server.protocol !== 'wss:' || server.username || server.password || server.search || server.hash || server.pathname !== '/ws') throw Error('serverUrl must be a WSS URL ending in /ws');
-  if (app.port || server.port) throw Error('The Docker Sandbox kit policy currently supports standard HTTPS/WSS port 443 only');
+  if (server.protocol !== 'https:' || server.username || server.password || server.search || server.hash || server.pathname !== '/') throw Error('serverUrl must be an HTTPS origin without credentials or a path');
+  if (app.port || server.port) throw Error('The Docker Sandbox kit policy currently supports standard HTTPS port 443 only');
   if (!Number.isInteger(config.cpus) || config.cpus < 1 || config.cpus > 64) throw Error('cpus must be an integer from 1 to 64');
   if (!/^\d+[gm]$/i.test(config.memory)) throw Error('memory must be a Docker size such as 16g');
   const kitRef = config.kitRef ?? null;
   if (kitRef !== null && (!publishedKit.test(kitRef) || kitRef === 'ghcr.io/teck-lab/teck-aitools-multica')) throw Error('kitRef must be a tagged or digest-pinned Teck.AiTools Multica OCI kit reference');
-  return { appUrl: app.origin, serverUrl: server.href, appHost: app.hostname, serverHost: server.hostname, cpus: config.cpus, memory: config.memory, kitRef };
+  return { appUrl: app.origin, serverUrl: server.origin, appHost: app.hostname, serverHost: server.hostname, cpus: config.cpus, memory: config.memory, kitRef };
 }
 
 export function inventory(run = command) {
@@ -105,9 +105,6 @@ export async function ensurePool(input, { run = command, root = defaultRoot, sta
       run('sbx', ['run', '--detach', '--name', name]);
       const verified = inventory(run).find(row => row.name === name);
       if (!verified || verified.id !== state.sandboxId) throw Error(`${name} identity changed during startup`);
-      run('sbx', ['exec', '-u', 'agent', name, 'multica', 'config', 'set', 'app_url', config.appUrl]);
-      run('sbx', ['exec', '-u', 'agent', name, 'multica', 'config', 'set', 'server_url', config.serverUrl]);
-      run('sbx', ['exec', '-u', 'agent', name, 'sh', '/usr/local/lib/teck-multica/start-daemon.sh']);
       state = { ...state, phase: 'ready' };
       writeState(root, state);
       ready.push(state);
@@ -143,11 +140,10 @@ if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.ur
     const name = sandboxNames[Number(slot) - 1], state = readState(defaultRoot, name);
     if (!state?.sandboxId || inventory().find(row => row.name === name)?.id !== state.sandboxId) throw Error('Sandbox ownership cannot be verified');
     command('sbx', ['exec', '-it', '-u', 'agent', name, 'multica', 'login', '--token']);
-    command('sbx', ['exec', '-u', 'agent', name, 'sh', '/usr/local/lib/teck-multica/start-daemon.sh']);
   } else if (action === 'status') {
     const rows = inventory();
     console.log(JSON.stringify(sandboxNames.map(name => ({ name, sandbox: rows.find(row => row.name === name) ?? null, ownership: readState(defaultRoot, name) })), null, 2));
   } else {
-    throw Error('Usage: node scripts/pool.mjs ensure --app-url URL --server-url WSS_URL [--kit-ref OCI_REF] | bootstrap <1|2> | status');
+    throw Error('Usage: node scripts/pool.mjs ensure --app-url URL --server-url HTTPS_ORIGIN [--kit-ref OCI_REF] | bootstrap <1|2> | status');
   }
 }

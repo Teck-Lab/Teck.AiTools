@@ -13,7 +13,7 @@ const here = dirname(fileURLToPath(import.meta.url));
 const repository = resolve(here, '../../..');
 const require = createRequire(import.meta.url);
 const YAML = require(join(repository, 'shared/runtime/kubernetes/vendor/yaml'));
-const config = { appUrl: 'https://multica.example.com', serverUrl: 'wss://multica.example.com/ws', cpus: 8, memory: '16g' };
+const config = { appUrl: 'https://multica.example.com', serverUrl: 'https://multica.example.com', cpus: 8, memory: '16g' };
 const remoteRef = `ghcr.io/teck-lab/teck-aitools-multica:sha-${'a'.repeat(40)}@sha256:${'b'.repeat(64)}`;
 
 async function withTemporaryDirectory(callback) {
@@ -35,8 +35,8 @@ test('fixed names and ownership prevent adoption or silent replacement', () => {
   assert.throws(() => ensureOwned(sandboxNames[0], current, null, normalized), /without a Teck\.AiTools ownership record/);
   assert.throws(() => ensureOwned(sandboxNames[0], { ...current, id: 'sbx-other' }, state, normalized), /identity changed/);
   assert.throws(() => ensureOwned(sandboxNames[0], null, state, normalized), /missing/);
-  assert.throws(() => ensureOwned(sandboxNames[0], current, state, { ...normalized, serverUrl: 'wss://other.example.com/ws' }), /mismatch/);
-  assert.throws(() => validateConfig({ ...config, serverUrl: 'wss://user:secret@multica.example.com/ws' }), /WSS URL/);
+  assert.throws(() => ensureOwned(sandboxNames[0], current, state, { ...normalized, serverUrl: 'https://other.example.com' }), /mismatch/);
+  assert.throws(() => validateConfig({ ...config, serverUrl: 'https://user:secret@multica.example.com' }), /HTTPS origin/);
   assert.equal(validateConfig({ ...config, kitRef: remoteRef }).kitRef, remoteRef);
   assert.throws(() => validateConfig({ ...config, kitRef: 'https://ghcr.io/teck-lab/teck-aitools-multica:latest' }), /kitRef/);
   assert.throws(() => ensureOwned(sandboxNames[0], current, state, validateConfig({ ...config, kitRef: remoteRef })), /mismatch/);
