@@ -53,7 +53,12 @@ export function stageKitSources({ destination, sharedRoot = shared, providerRoot
   walk(providerRoot, 'kits/mcphub', 'mcphub');
   walk(providerRoot, 'kits/multica', 'multica');
   copy(sharedRoot, 'runtime/omp/models.yml', 'multica/models.yml');
-  copy(sharedRoot, 'runtime/omp/config.yml', 'multica/config.yml');
+  copy(sharedRoot, 'runtime/omp/config.yml', 'multica/config.yml', text => {
+    const match = text.match(/^task:(\r?\n)  isolation:/m);
+    if (!match || text.match(/^task:(\r?\n)  isolation:/gm)?.length !== 1) throw Error('Shared OMP task settings changed; review Multica reviewer routing');
+    const nl = match[1];
+    return text.replace(match[0], `task:${nl}  agentModelOverrides:${nl}    reviewer: omniroute/teck-advisor${nl}    security-reviewer: omniroute/teck-advisor${nl}  isolation:`);
+  });
   for (const file of ['WATCHDOG.md', 'WATCHDOG.yml']) copy(providerRoot, `runtime/omp/${file}`, `multica/${file}`);
   walk(providerRoot, 'runtime/omp/agents', 'multica/agents');
   for (const skill of readdirSync(join(sharedRoot, 'runtime/omp/skills'), { withFileTypes: true })) {

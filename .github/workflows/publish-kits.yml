@@ -11,6 +11,7 @@ on:
       - providers/paseo/runtime/**
       - providers/paseo/scripts/kit-source.mjs
       - providers/multica/kits/**
+      - providers/multica/runtime/**
       - providers/multica/scripts/kit-source.mjs
       - shared/kits/**
       - shared/runtime/**

@@ -1,7 +1,7 @@
 ---
 name: quality-reviewer
 description: Read-only maintainability and test-quality review of an exact change.
-model: "@judge"
+model: "@advisor"
 thinking-level: medium
 tools: read, grep, glob, lsp, ast_grep
 advisor: false

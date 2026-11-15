@@ -89,10 +89,16 @@ test('Multica kit configures its URLs and watches for first-time login in the ba
     const shared = YAML.parseDocument(sharedText);
     assert.deepEqual(config.errors, []);
     assert.deepEqual(shared.errors, []);
-    assert.equal(configText, sharedText);
-    assert.equal(config.toJS().memory.backend, 'hindsight');
-    assert.equal(config.toJS().hindsight.apiUrl, 'https://hindsight-api.tecklab.dk');
-    assert.ok(!config.toJS().hindsight.apiToken);
+    const configValues = config.toJS();
+    assert.deepEqual(configValues.task.agentModelOverrides, {
+      reviewer: 'omniroute/teck-advisor',
+      'security-reviewer': 'omniroute/teck-advisor',
+    });
+    delete configValues.task.agentModelOverrides;
+    assert.deepEqual(configValues, shared.toJS());
+    assert.equal(configValues.memory.backend, 'hindsight');
+    assert.equal(configValues.hindsight.apiUrl, 'https://hindsight-api.tecklab.dk');
+    assert.ok(!configValues.hindsight.apiToken);
     assert.ok(!readFileSync(join(root, 'kits', 'multica', 'multica.dockerfile'), 'utf8').includes('mcp.json'));
     assert.match(readFileSync(join(root, 'kits', 'multica', 'multica.dockerfile'), 'utf8'), /COPY skills\/ /);
     assert.match(readFileSync(join(root, 'kits', 'multica', 'multica.dockerfile'), 'utf8'), /COPY WATCHDOG\.yml /);
@@ -102,6 +108,7 @@ test('Multica kit configures its URLs and watches for first-time login in the ba
     assert.deepEqual(watchdog.errors, []);
     assert.equal(watchdog.toJS().advisors[0].name, 'Implementation watchdog');
     assert.match(reviewer, /^---\nname: quality-reviewer/m);
+    assert.match(reviewer, /^model: "@advisor"$/m);
   } finally {
     rmSync(root, { recursive: true, force: true });
   }
