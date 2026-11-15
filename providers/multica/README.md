@@ -1,28 +1,28 @@
 ﻿# Multica on two long-lived Docker Sandboxes
 
-This provider creates and reuses two fixed, generic **Docker Sandboxes (`sbx`)**, not ordinary Compose containers. Each sandbox uses the shared Teck kit sources, the official pinned OMP kit, and a Multica daemon overlay. One Multica daemon inside each sandbox registers OMP as a built-in runtime. Multica agents bind to either runtime and can work across projects; a project does not create another sandbox or a project-named host.
+This provider publishes a complete OCI kit for generic, long-lived **Docker Sandboxes (`sbx`)**, not ordinary Compose containers. Each sandbox has the shared Teck tools, the official pinned OMP runtime, and a Multica daemon overlay. One Multica daemon inside each sandbox registers OMP as a built-in runtime. Multica agents can work across projects; a project does not create another sandbox or a project-named host.
 
 The Multica web/API service is deployed separately from the sibling [Teck.Coolify Multica service](../../../Teck.Coolify/src/multica). This provider contains no credentials and no Multica fork.
 
-## Create or reuse the pool from a published kit
+## Create directly from the published image
 
-Prerequisites: Node.js 22 or newer, Docker Sandboxes `sbx` with v3 kit support, and a reachable self-hosted Multica service. The Multica server and this kit pin v0.9.0. The OMP mixin comes directly from `../../shared/kits/omp` and pins official `@oh-my-pi/pi-coding-agent@18.20.0`.
+Prerequisites: Docker Sandboxes `sbx` with v3 kit support and a reachable self-hosted Multica service. The Multica server and this kit pin v0.9.0. The OMP mixin comes directly from `../../shared/kits/omp` and pins official `@oh-my-pi/pi-coding-agent@18.20.0`.
 
-After the GitHub Actions kit release publishes its OCI set, use its digest-pinned reference. `sbx` allows Docker Hub sources by default; permit the TeckLab GHCR namespace before creating a sandbox:
+Use the digest-pinned OCI set from the successful [kit release](https://github.com/Teck-Lab/Teck.AiTools/actions/workflows/publish-kits.yml). No Teck.AiTools checkout, downloaded script, or local kit build is needed. On PowerShell, preserve the JSON quotes when allowing GHCR:
 
 ```powershell
-sbx settings set kit.allowedSources '["docker.io/","ghcr.io/teck-lab/"]'
-Invoke-WebRequest https://raw.githubusercontent.com/Teck-Lab/Teck.AiTools/main/providers/multica/scripts/pool.mjs -OutFile .\pool.mjs
-node .\pool.mjs ensure --app-url https://multica.tecklab.dk --server-url wss://multica.tecklab.dk/ws --kit-ref 'ghcr.io/teck-lab/teck-aitools-multica:sha-<commit>@sha256:<digest>'
+sbx settings set kit.allowedSources '[\"docker.io/\",\"dhi.io/\",\"ghcr.io/teck-lab/\"]'
+sbx create --name teck-multica-omp-1 --skills off --env TECK_MULTICA_SANDBOX_NAME=teck-multica-omp-1 --kit-arg appHost=multica.tecklab.dk --kit-arg serverHost=multica.tecklab.dk 'ghcr.io/teck-lab/teck-aitools-multica@sha256:<published-digest>'
+sbx run --detach --name teck-multica-omp-1
 ```
 
-Replace `<commit>` and `<digest>` with the exact published release values; the example reference is not an image that exists yet. The single downloaded `pool.mjs` file has no source-kit dependency in this mode. It creates only missing owned sandboxes, starts both detached, and configures the CLI URLs inside them. It neither mounts a host repository nor starts `sbx-kit-builder`. Repeat the same command to reuse the same sandbox IDs. If the GHCR packages are private, configure `sbx` registry credentials before creation.
+Replace `<published-digest>` with the digest from the release summary. This creates one long-lived sandbox without a host workspace mount and without starting `sbx-kit-builder`. To create a second, repeat the `sbx create` and `sbx run` commands with `teck-multica-omp-2`. To reuse one, run `sbx run --detach --name teck-multica-omp-1`. If the GHCR package is private, configure an `sbx` registry credential before creation.
 
-Optional `--cpus 8 --memory 16g` sets size at creation. The chosen kit reference, size, and URLs are recorded with each sandbox; changes require an explicit migration rather than silently changing a persistent sandbox. The image still takes disk space when pulled and each sandbox has its own writable state.
+Optional `--cpus 8 --memory 16g` sets size at creation. The image still takes disk space when pulled and each sandbox has its own writable state.
 
-## Build directly from the checkout
+## Developer-only local source build
 
-From this directory, run:
+This is for changing and testing the kit sources. Running the published image above does not use it. From this directory, run:
 
 ```sh
 node scripts/pool.mjs ensure \
@@ -34,20 +34,24 @@ Replace the example URLs with the Coolify deployment URLs. Both may share one ho
 
 Ownership records live under the local `Teck.AiTools/multica` app-data directory. If a name exists without a matching record, or an owned sandbox disappears or changes ID, the command stops instead of adopting/replacing it. It never removes a sandbox, volume, or kit builder. Staged kit files are removed after the local create operation; shared source files stay in this repository.
 
-## Authenticate each sandbox
+## Authenticate and connect the sandbox
 
-Create a personal access token in your self-hosted Multica **Settings → API Tokens**. Then run:
+Create a personal access token in your self-hosted Multica **Settings → API Tokens**. Configure the CLI and log in inside each sandbox:
 
-```sh
-node scripts/pool.mjs bootstrap 1
-node scripts/pool.mjs bootstrap 2
+```powershell
+sbx exec -u agent teck-multica-omp-1 multica config set app_url https://multica.tecklab.dk
+sbx exec -u agent teck-multica-omp-1 multica config set server_url wss://multica.tecklab.dk/ws
+sbx exec -it -u agent teck-multica-omp-1 multica login --token
+sbx exec -u agent teck-multica-omp-1 sh /usr/local/lib/teck-multica/start-daemon.sh
 ```
 
-When using the single downloaded file, run the same commands as `node .\pool.mjs bootstrap 1` and `node .\pool.mjs bootstrap 2` from its directory.
+Repeat those commands with `teck-multica-omp-2` if you created a second sandbox. Paste the token interactively; it is saved in the sandbox's guest home. The kit startup hook restarts the daemon after future sandbox starts when authentication is valid. Configure OMP's model/provider login inside each sandbox, for example `sbx exec -it -u agent teck-multica-omp-1 omp`. OMP's own state remains in each persistent sandbox.
 
-Each command opens the official `multica login --token` prompt inside that sandbox. Paste the token interactively; it is saved only in the sandbox's guest home. The command then starts the daemon. The kit startup hook starts it again after future sandbox restarts when authentication is valid. Configure OMP's model/provider login inside each sandbox, for example `sbx exec -it -u agent teck-multica-omp-1 omp` and repeat for slot 2. OMP's own state remains in each persistent sandbox.
+Check `sbx exec -u agent teck-multica-omp-1 multica daemon status`. Multica **Runtimes** should show the sandbox computer with OMP. Create or edit Multica agents and bind them to that runtime. Project resources select the repository; Multica's run directories and caches live in each sandbox and follow [Multica's retention rules](https://multica.ai/docs/daemon-runtimes).
 
-Check `node scripts/pool.mjs status` (or `node .\pool.mjs status` for the downloaded file), `sbx exec -u agent teck-multica-omp-1 multica daemon status`, and the second sandbox likewise. Multica **Runtimes** should show two generic computers with OMP. Create or edit Multica agents and bind them to one runtime. Project resources select the repository; Multica's run directories and caches live in each sandbox and follow [Multica's retention rules](https://multica.ai/docs/daemon-runtimes).
+## Configure MCP once in Multica
+
+The Multica image allows outbound access to `mcp.tecklab.dk` and `hindsight-api.tecklab.dk` without requesting host-side secrets. In Multica, add each remote MCP server under **Settings → MCP servers**, including its `Authorization: Bearer <token>` header, then assign it on each OMP agent's **MCP** tab. Multica sends that configuration to the sandbox daemon for each run. The token is stored by the Multica server and reaches the agent runtime; it is not stored in the OCI image. The shared OMP `mcp.json` is not included in this image, so it cannot override the Multica-managed entry. If an agent calls Hindsight directly, give that agent `HINDSIGHT_API_KEY` in Multica's environment settings.
 
 ## Kit composition
 

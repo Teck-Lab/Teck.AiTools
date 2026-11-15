@@ -1,0 +1,14 @@
+# syntax=docker/sandbox-kit:3
+schemaVersion: "3"
+kind: mixin
+displayName: MCPHub and Hindsight network access
+description: Permit Multica-managed credentials without host-side kit secrets.
+provides:
+  - dk.tecklab/mcphub-access@1
+capabilities:
+  - type: com.docker.sandbox/network-policy@1
+    config:
+      runtime:
+        allow:
+          - mcp.tecklab.dk:443
+          - hindsight-api.tecklab.dk:443

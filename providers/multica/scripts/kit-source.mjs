@@ -46,7 +46,10 @@ export function stageKitSources({ destination, sharedRoot = shared, providerRoot
 
   copy(sharedRoot, 'kits/base/base.dockerfile', 'base/base.dockerfile');
   for (const file of ['base.yaml', 'context.md']) copy(providerRoot, `kits/base/${file}`, `base/${file}`);
-  for (const name of ['omp', 'devtools', 'browser', 'kubernetes', 'omniroute', 'mcphub']) walk(sharedRoot, `kits/${name}`, name);
+  for (const name of ['omp', 'devtools', 'browser', 'kubernetes', 'omniroute']) walk(sharedRoot, `kits/${name}`, name);
+  // Multica supplies MCPHub headers with each agent run. Keep its network
+  // permission, but do not make this provider require a secret on every host.
+  walk(providerRoot, 'kits/mcphub', 'mcphub');
   walk(providerRoot, 'kits/multica', 'multica');
 
   const workload = 'runtime/kits/workload';
