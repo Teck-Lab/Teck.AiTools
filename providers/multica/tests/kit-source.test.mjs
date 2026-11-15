@@ -49,14 +49,15 @@ test('Multica kit configures its URLs and watches for first-time login in the ba
     const descriptor = YAML.parseDocument(readFileSync(join(root, 'kits', 'multica', 'multica.yaml'), 'utf8'));
     assert.deepEqual(descriptor.errors, []);
     const mixin = descriptor.toJS();
-    assert.equal(mixin.args.appHost.env, 'TECK_MULTICA_APP_HOST');
-    assert.equal(mixin.args.serverHost.env, 'TECK_MULTICA_SERVER_HOST');
+    assert.equal(mixin.args.appHost.env, undefined);
+    assert.equal(mixin.args.serverHost.env, undefined);
     const lifecycle = mixin.capabilities.find(capability => capability.type === 'com.docker.sandbox/lifecycle@1');
     assert.match(lifecycle.config.install[1].command, /multica config set app_url "https:\/\/\$\{\{ kit\.args\.appHost \}\}"/);
     assert.match(lifecycle.config.install[1].command, /multica config set server_url "https:\/\/\$\{\{ kit\.args\.serverHost \}\}"/);
     assert.equal(lifecycle.config.install[1].user, 'agent');
     assert.equal(lifecycle.config.startup[0].background, true);
     assert.equal(lifecycle.config.startup[0].user, 'agent');
+    assert.deepEqual(lifecycle.config.startup[0].command.slice(2), ['${{ kit.args.appHost }}', '${{ kit.args.serverHost }}']);
     const script = readFileSync(join(root, 'kits', 'multica', 'start-daemon.sh'), 'utf8');
     assert.match(script, /multica config set app_url "https:\/\/\$app_host"/);
     assert.match(script, /multica config set server_url "https:\/\/\$server_host"/);

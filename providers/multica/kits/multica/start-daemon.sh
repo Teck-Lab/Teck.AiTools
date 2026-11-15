@@ -1,8 +1,8 @@
 #!/bin/sh
 set -eu
 
-app_host="${TECK_MULTICA_APP_HOST:?Multica app host is required}"
-server_host="${TECK_MULTICA_SERVER_HOST:?Multica server host is required}"
+app_host="${1:?Multica app host is required}"
+server_host="${2:?Multica server host is required}"
 multica config set app_url "https://$app_host"
 multica config set server_url "https://$server_host"
 
