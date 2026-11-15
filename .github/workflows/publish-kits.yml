@@ -204,9 +204,9 @@ jobs:
               printf '{"name":"%s","ref":"%s","digest":"%s"}\n' "$name" "$ref" "$digest" > "receipts/$name.json"
             done
           fi
-          node "providers/$PROVIDER/scripts/oci-release.mjs" set --tag "$COMPONENT_TAG" --receipts receipts --out "$RUNNER_TEMP/oci-set/$PROVIDER.yaml"
+          node "providers/$PROVIDER/scripts/oci-release.mjs" set --tag "$COMPONENT_TAG" --receipts receipts --out "$RUNNER_TEMP/oci-set/teck-aitools-$PROVIDER.yaml"
           echo "context=$RUNNER_TEMP/oci-set" >> "$GITHUB_OUTPUT"
-          echo "file=$RUNNER_TEMP/oci-set/$PROVIDER.yaml" >> "$GITHUB_OUTPUT"
+          echo "file=$RUNNER_TEMP/oci-set/teck-aitools-$PROVIDER.yaml" >> "$GITHUB_OUTPUT"
       - name: Build and publish provider set
         id: build
         uses: docker/build-push-action@v7
