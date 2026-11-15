@@ -2,7 +2,7 @@
 schemaVersion: "3"
 kind: mixin
 displayName: Multica daemon
-description: Pinned Multica CLI and startup hook for the built-in OMP runtime.
+description: Pinned Multica CLI, OMP Hindsight memory, and startup hook.
 requires:
   - dk.tecklab/base >= 1
   - omp >= 18.20.0
@@ -31,6 +31,9 @@ capabilities:
         - command: install -d -o agent -g agent -m 700 /home/agent/.omp/agent && install -o agent -g agent -m 600 /usr/local/share/teck-multica/models.yml /home/agent/.omp/agent/models.yml
           user: "0"
           description: Install the shared Teck OMP model catalog without provider keys.
+        - command: install -o agent -g agent -m 600 /usr/local/share/teck-multica/config.yml /home/agent/.omp/agent/config.yml
+          user: "0"
+          description: Enable native Hindsight memory for Multica-managed agent credentials.
         - command: multica config set app_url "https://${{ kit.args.appHost }}" && multica config set server_url "https://${{ kit.args.serverHost }}"
           user: agent
           description: Configure the self-hosted Multica server before the first login.

@@ -37,6 +37,8 @@ test('Multica kit permits MCPHub, Hindsight, and OmniRoute without host-side cre
       row.source === 'provider/kits/mcphub/mcphub.yaml'));
     assert.ok(manifest.provenance.some(row => row.destination === 'omniroute/omniroute.yaml' &&
       row.source === 'provider/kits/omniroute/omniroute.yaml'));
+    assert.ok(!manifest.provenance.some(row => /(?:^|\/)(?:skills|extensions)\//.test(row.destination) ||
+      row.source.includes('providers/orca') || row.source.includes('orca-orchestration')));
   } finally {
     rmSync(root, { recursive: true, force: true });
   }
@@ -53,9 +55,10 @@ test('Multica kit configures its URLs and watches for first-time login in the ba
     assert.equal(mixin.args.serverHost.env, undefined);
     const lifecycle = mixin.capabilities.find(capability => capability.type === 'com.docker.sandbox/lifecycle@1');
     assert.match(lifecycle.config.install[1].command, /models\.yml \/home\/agent\/\.omp\/agent\/models\.yml/);
-    assert.match(lifecycle.config.install[2].command, /multica config set app_url "https:\/\/\$\{\{ kit\.args\.appHost \}\}"/);
-    assert.match(lifecycle.config.install[2].command, /multica config set server_url "https:\/\/\$\{\{ kit\.args\.serverHost \}\}"/);
-    assert.equal(lifecycle.config.install[2].user, 'agent');
+    assert.match(lifecycle.config.install[2].command, /config\.yml \/home\/agent\/\.omp\/agent\/config\.yml/);
+    assert.match(lifecycle.config.install[3].command, /multica config set app_url "https:\/\/\$\{\{ kit\.args\.appHost \}\}"/);
+    assert.match(lifecycle.config.install[3].command, /multica config set server_url "https:\/\/\$\{\{ kit\.args\.serverHost \}\}"/);
+    assert.equal(lifecycle.config.install[3].user, 'agent');
     assert.equal(lifecycle.config.startup[0].background, true);
     assert.equal(lifecycle.config.startup[0].user, 'agent');
     assert.deepEqual(lifecycle.config.startup[0].command.slice(2), ['${{ kit.args.appHost }}', '${{ kit.args.serverHost }}']);
@@ -67,6 +70,18 @@ test('Multica kit configures its URLs and watches for first-time login in the ba
     const models = readFileSync(join(root, 'kits', 'multica', 'models.yml'), 'utf8');
     assert.match(models, /id: teck-orchestrator/);
     assert.match(models, /apiKey: OMNIROUTE_API_KEY/);
+    const configText = readFileSync(join(root, 'kits', 'multica', 'config.yml'), 'utf8');
+    const sharedText = readFileSync(join(import.meta.dirname, '../../../shared/runtime/omp/config.yml'), 'utf8');
+    const config = YAML.parseDocument(configText);
+    const shared = YAML.parseDocument(sharedText);
+    assert.deepEqual(config.errors, []);
+    assert.deepEqual(shared.errors, []);
+    assert.equal(configText, sharedText);
+    assert.equal(config.toJS().memory.backend, 'hindsight');
+    assert.equal(config.toJS().hindsight.apiUrl, 'https://hindsight-api.tecklab.dk');
+    assert.ok(!config.toJS().hindsight.apiToken);
+    assert.ok(!readFileSync(join(root, 'kits', 'multica', 'multica.dockerfile'), 'utf8').includes('mcp.json'));
+    assert.ok(!readFileSync(join(root, 'kits', 'multica', 'multica.dockerfile'), 'utf8').includes('mcp.json'));
   } finally {
     rmSync(root, { recursive: true, force: true });
   }
