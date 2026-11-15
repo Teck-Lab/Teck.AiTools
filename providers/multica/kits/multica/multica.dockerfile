@@ -20,3 +20,4 @@ RUN set -eu; \
 FROM scratch
 COPY --from=build /out/ /
 COPY start-daemon.sh /usr/local/lib/teck-multica/start-daemon.sh
+COPY models.yml /usr/local/share/teck-multica/models.yml

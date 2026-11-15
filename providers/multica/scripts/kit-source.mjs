@@ -52,6 +52,7 @@ export function stageKitSources({ destination, sharedRoot = shared, providerRoot
   walk(providerRoot, 'kits/omniroute', 'omniroute');
   walk(providerRoot, 'kits/mcphub', 'mcphub');
   walk(providerRoot, 'kits/multica', 'multica');
+  copy(sharedRoot, 'runtime/omp/models.yml', 'multica/models.yml');
 
   const workload = 'runtime/kits/workload';
   for (const name of ['devtools', 'browser', 'kubernetes']) copy(sharedRoot, `${workload}/devtools.json`, `${name}/assets/devtools.json`);

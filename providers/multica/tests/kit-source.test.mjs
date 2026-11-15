@@ -52,9 +52,10 @@ test('Multica kit configures its URLs and watches for first-time login in the ba
     assert.equal(mixin.args.appHost.env, undefined);
     assert.equal(mixin.args.serverHost.env, undefined);
     const lifecycle = mixin.capabilities.find(capability => capability.type === 'com.docker.sandbox/lifecycle@1');
-    assert.match(lifecycle.config.install[1].command, /multica config set app_url "https:\/\/\$\{\{ kit\.args\.appHost \}\}"/);
-    assert.match(lifecycle.config.install[1].command, /multica config set server_url "https:\/\/\$\{\{ kit\.args\.serverHost \}\}"/);
-    assert.equal(lifecycle.config.install[1].user, 'agent');
+    assert.match(lifecycle.config.install[1].command, /models\.yml \/home\/agent\/\.omp\/agent\/models\.yml/);
+    assert.match(lifecycle.config.install[2].command, /multica config set app_url "https:\/\/\$\{\{ kit\.args\.appHost \}\}"/);
+    assert.match(lifecycle.config.install[2].command, /multica config set server_url "https:\/\/\$\{\{ kit\.args\.serverHost \}\}"/);
+    assert.equal(lifecycle.config.install[2].user, 'agent');
     assert.equal(lifecycle.config.startup[0].background, true);
     assert.equal(lifecycle.config.startup[0].user, 'agent');
     assert.deepEqual(lifecycle.config.startup[0].command.slice(2), ['${{ kit.args.appHost }}', '${{ kit.args.serverHost }}']);
@@ -63,6 +64,9 @@ test('Multica kit configures its URLs and watches for first-time login in the ba
     assert.match(script, /multica config set server_url "https:\/\/\$server_host"/);
     assert.match(script, /multica auth status/);
     assert.match(script, /multica daemon start/);
+    const models = readFileSync(join(root, 'kits', 'multica', 'models.yml'), 'utf8');
+    assert.match(models, /id: teck-orchestrator/);
+    assert.match(models, /apiKey: OMNIROUTE_API_KEY/);
   } finally {
     rmSync(root, { recursive: true, force: true });
   }

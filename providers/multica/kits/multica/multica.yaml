@@ -28,6 +28,9 @@ capabilities:
         - command: install -d -o agent -g agent -m 700 /home/agent/.multica /home/agent/multica_workspaces
           user: "0"
           description: Initialize Multica state and run directories without credentials.
+        - command: install -d -o agent -g agent -m 700 /home/agent/.omp/agent && install -o agent -g agent -m 600 /usr/local/share/teck-multica/models.yml /home/agent/.omp/agent/models.yml
+          user: "0"
+          description: Install the shared Teck OMP model catalog without provider keys.
         - command: multica config set app_url "https://${{ kit.args.appHost }}" && multica config set server_url "https://${{ kit.args.serverHost }}"
           user: agent
           description: Configure the self-hosted Multica server before the first login.
