@@ -12,6 +12,7 @@ const receipts = kitNames.map(name => ({ name, ref: `${registry}/${name}:${tag}`
 test('Paseo release set pins published components and leaves inactive Office separate', () => {
   const descriptor = JSON.parse(setDescriptor(tag, receipts).split('\n').slice(1).join('\n'));
   assert.equal(descriptor.kind, 'set');
+  assert.equal(descriptor.version, undefined);
   assert.equal(descriptor.kits.length, activeKits.length);
   assert.deepEqual(descriptor.kits, activeKits.map(name => receipts.find(receipt => receipt.name === name)).map(({ ref, digest }) => ({ ref, digest })));
   assert.ok(!descriptor.kits.some(({ ref }) => ref.includes('/office:')));

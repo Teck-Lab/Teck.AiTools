@@ -4,11 +4,17 @@ on:
   push:
     branches: [main]
     paths:
-      - .github/workflows/publish-kits.yml
-      - providers/**
-      - shared/**
-      - tools/**
-      - package.json
+      - providers/orca/kits/**
+      - providers/orca/runtime/**
+      - providers/orca/scripts/kit-source.mjs
+      - providers/paseo/kits/**
+      - providers/paseo/runtime/**
+      - providers/paseo/scripts/kit-source.mjs
+      - providers/multica/kits/**
+      - providers/multica/scripts/kit-source.mjs
+      - shared/kits/**
+      - shared/runtime/**
+      - tools/materialize.mjs
   workflow_dispatch:
     inputs:
       provider:
@@ -16,6 +22,10 @@ on:
         type: choice
         options: [all, orca, paseo, multica]
         default: all
+      reuse_components_sha:
+        description: Optional full commit SHA whose signed component images should be reused
+        type: string
+        required: false
 
 permissions:
   contents: read
@@ -31,6 +41,8 @@ jobs:
     outputs:
       components: ${{ steps.plan.outputs.components }}
       providers: ${{ steps.plan.outputs.providers }}
+      reuse: ${{ steps.plan.outputs.reuse }}
+      component_sha: ${{ steps.plan.outputs.component_sha }}
     steps:
       - uses: actions/checkout@v7
         with:
@@ -42,10 +54,21 @@ jobs:
         id: plan
         env:
           SELECTED_PROVIDER: ${{ inputs.provider || 'all' }}
-        run: node tools/oci-plan.mjs "$SELECTED_PROVIDER"
+          REUSE_COMPONENTS_SHA: ${{ inputs.reuse_components_sha }}
+        run: |
+          node tools/oci-plan.mjs "$SELECTED_PROVIDER"
+          if [[ -n "$REUSE_COMPONENTS_SHA" ]]; then
+            [[ "$REUSE_COMPONENTS_SHA" =~ ^[a-f0-9]{40}$ ]] || { echo 'Expected a full lowercase component commit SHA' >&2; exit 1; }
+            echo 'reuse=true' >> "$GITHUB_OUTPUT"
+            echo "component_sha=$REUSE_COMPONENTS_SHA" >> "$GITHUB_OUTPUT"
+          else
+            echo 'reuse=false' >> "$GITHUB_OUTPUT"
+            echo "component_sha=$GITHUB_SHA" >> "$GITHUB_OUTPUT"
+          fi
 
   components:
     needs: plan
+    if: needs.plan.outputs.reuse == 'false'
     runs-on: ubuntu-24.04
     timeout-minutes: 180
     strategy:
@@ -129,6 +152,7 @@ jobs:
 
   sets:
     needs: [plan, components]
+    if: always() && needs.plan.result == 'success' && (needs.components.result == 'success' || needs.plan.outputs.reuse == 'true')
     runs-on: ubuntu-24.04
     timeout-minutes: 180
     strategy:
@@ -149,20 +173,11 @@ jobs:
         with:
           node-version: '24'
       - uses: actions/download-artifact@v4
+        if: needs.plan.outputs.reuse == 'false'
         with:
           pattern: kit-${{ matrix.provider }}-*
           path: receipts
           merge-multiple: true
-      - name: Compose digest-pinned set
-        id: compose
-        env:
-          PROVIDER: ${{ matrix.provider }}
-          TAG: sha-${{ github.sha }}
-        run: |
-          mkdir -p "$RUNNER_TEMP/oci-set"
-          node "providers/$PROVIDER/scripts/oci-release.mjs" set --tag "$TAG" --receipts receipts --out "$RUNNER_TEMP/oci-set/$PROVIDER.yaml"
-          echo "context=$RUNNER_TEMP/oci-set" >> "$GITHUB_OUTPUT"
-          echo "file=$RUNNER_TEMP/oci-set/$PROVIDER.yaml" >> "$GITHUB_OUTPUT"
       - uses: docker/setup-qemu-action@v3
       - uses: docker/setup-buildx-action@v4
       - uses: docker/login-action@v4
@@ -171,6 +186,27 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
       - uses: sigstore/cosign-installer@v4.1.3
+      - name: Compose digest-pinned set
+        id: compose
+        env:
+          PROVIDER: ${{ matrix.provider }}
+          COMPONENT_TAG: sha-${{ needs.plan.outputs.component_sha }}
+          REUSE: ${{ needs.plan.outputs.reuse }}
+        run: |
+          mkdir -p "$RUNNER_TEMP/oci-set" receipts
+          if [[ "$REUSE" == true ]]; then
+            names=$(node --input-type=module -e 'const {kitNames}=await import(`./providers/${process.env.PROVIDER}/scripts/kit-source.mjs`); console.log(kitNames.join(" "))')
+            for name in $names; do
+              ref="ghcr.io/teck-lab/teck-aitools-$PROVIDER/$name:$COMPONENT_TAG"
+              digest=$(docker buildx imagetools inspect "$ref" --format '{{.Manifest.Digest}}')
+              [[ "$digest" =~ ^sha256:[a-f0-9]{64}$ ]] || { echo "Invalid digest for $ref" >&2; exit 1; }
+              cosign verify --certificate-identity "https://github.com/Teck-Lab/Teck.AiTools/.github/workflows/publish-kits.yml@$GITHUB_REF" --certificate-oidc-issuer https://token.actions.githubusercontent.com "$ref@$digest" > /dev/null
+              printf '{"name":"%s","ref":"%s","digest":"%s"}\n' "$name" "$ref" "$digest" > "receipts/$name.json"
+            done
+          fi
+          node "providers/$PROVIDER/scripts/oci-release.mjs" set --tag "$COMPONENT_TAG" --receipts receipts --out "$RUNNER_TEMP/oci-set/$PROVIDER.yaml"
+          echo "context=$RUNNER_TEMP/oci-set" >> "$GITHUB_OUTPUT"
+          echo "file=$RUNNER_TEMP/oci-set/$PROVIDER.yaml" >> "$GITHUB_OUTPUT"
       - name: Build and publish provider set
         id: build
         uses: docker/build-push-action@v7

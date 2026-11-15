@@ -21,6 +21,7 @@ test('Multica set pins all component digests and forwards host policy arguments'
   const set = document.toJS();
   assert.equal(set.schemaVersion, '3');
   assert.equal(set.kind, 'set');
+  assert.equal(set.version, undefined);
   assert.deepEqual(set.kits.map(kit => kit.ref), receipts.map(receipt => receipt.ref));
   assert.deepEqual(set.kits.map(kit => kit.digest), receipts.map(receipt => receipt.digest));
   assert.equal(set.kits.at(-1).args.appHost, '${{ kit.args.appHost }}');

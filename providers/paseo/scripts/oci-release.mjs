@@ -23,7 +23,6 @@ export function setDescriptor(tag, receipts) {
     schemaVersion: '3',
     kind: 'set',
     displayName: 'Teck Paseo project sandbox',
-    version: tag,
     description: 'Pinned Paseo daemon, official OMP plugin and development tools for a persistent project sandbox.',
     kits: activeKits.map(name => byName.get(name)),
   }, null, 2) + '\n';

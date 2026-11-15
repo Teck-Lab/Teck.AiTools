@@ -24,7 +24,7 @@ export function setDescriptor(tag, receipts) {
   });
   // JSON is valid YAML; Docker's syntax directive selects the v3 kit frontend.
   return '# syntax=docker/sandbox-kit:3\n' + JSON.stringify({
-    schemaVersion: '3', kind: 'set', displayName: 'Teck Multica OMP sandbox', version: tag,
+    schemaVersion: '3', kind: 'set', displayName: 'Teck Multica OMP sandbox',
     description: 'Long-lived Multica daemon and official OMP runtime with shared Teck development tools.',
     args: {
       appHost: { required: true, pattern: '^[A-Za-z0-9.-]+$' },
