@@ -1,0 +1,16 @@
+{
+  "name": "teck-ai-tools",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "import": "node tools/import-sources.mjs",
+    "verify:import": "node tools/verify-import.mjs",
+    "build:orca": "node tools/materialize.mjs orca && npm --prefix build/orca run build",
+    "build:paseo": "node tools/materialize.mjs paseo",
+    "build": "npm run build:orca && npm run build:paseo",
+    "test": "npm run build && npm --prefix build/orca test && npm --prefix build/paseo test && node --test providers/multica/tests/*.test.mjs"
+  }
+}

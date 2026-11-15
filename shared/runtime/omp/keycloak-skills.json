@@ -1,0 +1,90 @@
+{
+  "repository": "NikiforovAll/keycloak-authorization-services-dotnet",
+  "commit": "7b3e8841e81350cac8e234578744f76fdf06c96f",
+  "files": [
+    {
+      "path": "keycloak-skills.LICENSE",
+      "sha256": "d8ee072a1f6bafe833126b5ceecfba251bbbe0c0ba230840003d883c0f30e7a2"
+    },
+    {
+      "path": "skills/keycloak-administration/references/authentication-sso.md",
+      "sha256": "319e12cc669e5351c498e9cb5224f2353eeb38093bd2f4bf0b0d03a81c5daf2d"
+    },
+    {
+      "path": "skills/keycloak-administration/references/authorization-rbac.md",
+      "sha256": "26d4a004731052aa407bc79a11c2c897b59cd4deefcc440ffc5fe1bb2474e0d6"
+    },
+    {
+      "path": "skills/keycloak-administration/references/client-configuration.md",
+      "sha256": "dfb34fcc1bafe877d3ddd3f39e555a2c52e720de5fc090111dab8f55925c35c5"
+    },
+    {
+      "path": "skills/keycloak-administration/references/ha-scalability.md",
+      "sha256": "5ba8b6f92f35e8c5d71ea9538ccabe6e622c5834be54087818d9b3d58f9f3e3d"
+    },
+    {
+      "path": "skills/keycloak-administration/references/integration-examples.md",
+      "sha256": "e1f4bc41ea4890ff6a2c0b2173b6614feb548d5cca492a8dcd5ce16048fa49f1"
+    },
+    {
+      "path": "skills/keycloak-administration/references/realm-management.md",
+      "sha256": "50467249a1c70e50dad8e7f12fbd1928a6a4d42c23f091ab85783eeabadb0295"
+    },
+    {
+      "path": "skills/keycloak-administration/references/security-hardening.md",
+      "sha256": "3704eb2bb04e8e4976734f33b8a68dcc3ede29c23e197cddd1c57bbe557f6e12"
+    },
+    {
+      "path": "skills/keycloak-administration/references/troubleshooting.md",
+      "sha256": "4092d8e8c91cf71cdb4cf414b71b09829e3efdeb6693b7f6ef56ddfedf0c2bd3"
+    },
+    {
+      "path": "skills/keycloak-administration/references/user-federation.md",
+      "sha256": "f3f5b3643517fee244d80bf1071145ad776a7c82a31d659c2302d2f8d1736318"
+    },
+    {
+      "path": "skills/keycloak-administration/SKILL.md",
+      "sha256": "566e0abd674a6bbe4f774f67de0cfddc360f5a2eacb119f3300768a7fe973473"
+    },
+    {
+      "path": "skills/keycloak-auth-services/references/admin-sdk.md",
+      "sha256": "a7736231a502447e2c9526a418e5581feb6c889fc36f4a62f72d9bd4c223264d"
+    },
+    {
+      "path": "skills/keycloak-auth-services/references/authentication.md",
+      "sha256": "aa1bccd83636fc7422ce4aa273e3e4a73659547ca5e1d367371dfbdbe542e3e1"
+    },
+    {
+      "path": "skills/keycloak-auth-services/references/authorization.md",
+      "sha256": "400f1d349c5edb7cb0e14eec5a4882318305348590ab066def74b8daee237160"
+    },
+    {
+      "path": "skills/keycloak-auth-services/references/configuration.md",
+      "sha256": "db74704831755005a1e3c83aac07010bba3d9ab1eebcf5552fc7528516497a9b"
+    },
+    {
+      "path": "skills/keycloak-auth-services/references/devex.md",
+      "sha256": "7020961a916d2e08ffd6b9850c3699bede5cdacb95ea88b714e98aaf2988a5ad"
+    },
+    {
+      "path": "skills/keycloak-auth-services/references/organization-authorization.md",
+      "sha256": "4c1e529d0f3fba2aa8dc61e0ae6c1a31b9b8fe4ac77400b51a3bfee311458224"
+    },
+    {
+      "path": "skills/keycloak-auth-services/references/protection-api.md",
+      "sha256": "aac09de6ef3e022b6ffa40a2e92f3137ac2a64cea3822cc3e9c905aad6874e0c"
+    },
+    {
+      "path": "skills/keycloak-auth-services/references/resource-protection.md",
+      "sha256": "37b7dbc91b842d9816820e39c7ba84fb506c9e8ee5f4cd85965d2db9187a29fa"
+    },
+    {
+      "path": "skills/keycloak-auth-services/references/troubleshooting.md",
+      "sha256": "fb5630dd4af2e5fe44885390f101288ab56387053aa8c0f9e0f923211bc0a832"
+    },
+    {
+      "path": "skills/keycloak-auth-services/SKILL.md",
+      "sha256": "5fdce97cf42f9a93aa97cf8e392eeb86baec82a2c730398c9335ac0c4ade91e9"
+    }
+  ]
+}

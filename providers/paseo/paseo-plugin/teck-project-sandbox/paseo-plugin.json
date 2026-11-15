@@ -1,0 +1,9 @@
+{
+  "id": "teck-project-sandbox",
+  "name": "Teck project sandboxes",
+  "description": "Create or reuse one long lived Docker Sandbox per Paseo project.",
+  "media": [],
+  "requirements": {
+    "paseo": ">=0.15.4"
+  }
+}

@@ -1,0 +1,86 @@
+{
+  "source": "Installed Orca CLI: skills get --full --json",
+  "orcaVersion": "1.4.258",
+  "files": [
+    {
+      "skill": "orca-cli",
+      "path": "SKILL.md",
+      "sha256": "a5536a342549b47db5c8e93ca21c24681c102f3b4d8b59cc4312423538718ca5"
+    },
+    {
+      "skill": "orca-cli",
+      "path": "references/automations.md",
+      "sha256": "0c238a007f9d820fb818e465d581f32c97278e7570fa7c1ea9dccf9c205379dd"
+    },
+    {
+      "skill": "orca-cli",
+      "path": "references/browser.md",
+      "sha256": "c2b0f7744e2f18bb2573ac786ae954db79be38c04f8fadb2a49cc424c08d56e7"
+    },
+    {
+      "skill": "orca-cli",
+      "path": "references/plugins.md",
+      "sha256": "935530f778e9148227d1a4853f0bde7e05911d9760d6365a6f4b58fe79c0c6b4"
+    },
+    {
+      "skill": "orchestration",
+      "path": "SKILL.md",
+      "sha256": "3031d4a8a7a27b2cd802d71b320dd2920e239c46760a25bfb9a97508f54b2ee9"
+    },
+    {
+      "skill": "orchestration",
+      "path": "references/coordinator-loop.md",
+      "sha256": "d2009678d76d73a1f58b3f25939b15f4a6f81b9a409b2573d1219f827e145bcc"
+    },
+    {
+      "skill": "orchestration",
+      "path": "references/low-level-topology.md",
+      "sha256": "17c03e704db686995b243b79e5bbbd4a22cbc4b2205a43123b46ccbeb86246f6"
+    },
+    {
+      "skill": "orchestration",
+      "path": "references/messaging-and-gates.md",
+      "sha256": "5f0a0391f5f7dadc5180efde6b10c89c8ab99060dfdef41e070708b4e2b04e9c"
+    },
+    {
+      "skill": "orchestration",
+      "path": "references/placement-and-remote.md",
+      "sha256": "2c770268c41fd6c083c6347c3d79ddd9d8125e36850ce8de9e205e335d037987"
+    },
+    {
+      "skill": "orchestration",
+      "path": "references/recovery-and-cleanup.md",
+      "sha256": "85f927621d79b5a91a0b8756b27d016833254ed72ddfaca5cf8b143fd1f5ccad"
+    },
+    {
+      "skill": "orca-per-workspace-env",
+      "path": "SKILL.md",
+      "sha256": "a388e6e0463c8e6283e75531c013a0041bccc8ccf10b34e8bc968532a3572bb4"
+    },
+    {
+      "skill": "orca-per-workspace-env",
+      "path": "references/docker-ssh.md",
+      "sha256": "0a7403198af7fa0c2102bea7a7e3af9a522f644a757fb128055b19b39b4608b3"
+    },
+    {
+      "skill": "orca-per-workspace-env",
+      "path": "references/failure-modes.md",
+      "sha256": "086f11e9c610b5fb13cc2b8abc80b7482d5ae45ffeacf8e6a8c7c0331a1aac28"
+    },
+    {
+      "skill": "orca-per-workspace-env",
+      "path": "references/provider-vercel.md",
+      "sha256": "17e216672a9602a7012ee90aca84e7f182b664b06685f132c4154e062b1a51f5"
+    },
+    {
+      "skill": "orca-per-workspace-env",
+      "path": "references/ssh-host.md",
+      "sha256": "03340c3f0267fa47389d303f8de01c9f4e3ae3025f7c63382a06e62680880e1f"
+    },
+    {
+      "skill": "orca-per-workspace-env",
+      "path": "references/windows-scripts.md",
+      "sha256": "548bdca26af67c23a51070da633db12be41cb8da1ecdf0484f8d4f94fb290382"
+    }
+  ]
+}

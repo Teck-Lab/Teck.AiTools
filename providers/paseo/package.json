@@ -1,0 +1,8 @@
+{
+  "name": "teck-paseo",
+  "private": true,
+  "scripts": {
+    "test": "node --test tests/*.test.mjs",
+    "test:project": "node --test tests/project.test.mjs"
+  }
+}

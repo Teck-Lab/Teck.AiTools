@@ -1,0 +1,38 @@
+name: Validate Paseo source kits
+
+on:
+  pull_request:
+    paths:
+      - .github/workflows/source-kits.yml
+      - kits/**
+      - runtime/**
+      - scripts/**
+      - tests/**
+      - package.json
+      - projects.json
+  push:
+    branches: [main]
+    paths:
+      - .github/workflows/source-kits.yml
+      - kits/**
+      - runtime/**
+      - scripts/**
+      - tests/**
+      - package.json
+      - projects.json
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: '24'
+      - run: npm test
+      - name: Stage source kits
+        run: node scripts/kit-source.mjs --out "$RUNNER_TEMP/teck-paseo-kits" > "$RUNNER_TEMP/teck-paseo-sources.json"

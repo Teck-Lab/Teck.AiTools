@@ -1,0 +1,19 @@
+{
+  "sharedFiles": 546,
+  "providers": {
+    "orca": {
+      "source": "Teck.Orca",
+      "commit": "40e4c0f0633c07384d83e1a78d5932e2ccc563c5",
+      "workingTreeDirty": true,
+    "files": 1342,
+    "providerFiles": 796
+    },
+    "paseo": {
+      "source": "Teck.Paseo",
+      "commit": "c002dfa8e8f9d3ee8e09c5ad86f9d11a8d29b9f1",
+      "workingTreeDirty": true,
+      "files": 600,
+      "providerFiles": 54
+    }
+  }
+}

@@ -1,0 +1,33 @@
+# syntax=docker/sandbox-kit:3
+schemaVersion: "3"
+kind: workload
+displayName: Teck shared Multica sandbox
+description: Long-running Docker Sandbox with shared development base and no host workspace mount.
+provides:
+  - dk.tecklab/base@1
+capabilities:
+  - type: com.docker.sandbox/sbx@1
+  - type: com.docker.sandbox/long-running@1
+  - type: com.docker.sandbox/network-policy@1
+    config:
+      runtime:
+        allow:
+          - github.com:443
+          - api.github.com:443
+          - registry.npmjs.org:443
+          - api.nuget.org:443
+          - data.nuget.org:443
+          - globalcdn.nuget.org:443
+          - cr.kgateway.dev:443
+          - quay.io:443
+          - "*.quay.io:443"
+          - dl.k8s.io:443
+          - cdn.dl.k8s.io:443
+          - registry.k8s.io:443
+          - builds.dotnet.microsoft.com:443
+          - aka.ms:443
+          - playwright.download.prss.microsoft.com:443
+  - type: com.docker.sandbox/agent-context@1
+    config:
+      filename: AGENTS.md
+      contentFile: context.md

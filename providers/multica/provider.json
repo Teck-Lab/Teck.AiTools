@@ -1,0 +1,12 @@
+{
+  "id": "multica",
+  "name": "Multica OMP Docker Sandbox pool",
+  "kind": "docker-sandboxes-v3",
+  "entrypoint": "scripts/pool.mjs",
+  "sharedKitSource": "../../shared",
+  "sandboxNames": ["teck-multica-omp-1", "teck-multica-omp-2"],
+  "upstream": {
+    "multica": "v0.9.0",
+    "ohMyPi": "v18.20.0"
+  }
+}
