@@ -53,7 +53,7 @@ test('Multica kit uses Docker-managed OmniRoute and stages only reusable OMP ski
   }
 });
 
-test('Multica kit configures its URLs and watches for first-time login in the background', () => {
+test('Multica kit configures its URLs and bootstraps daemon auth from the Docker secret', () => {
   const root = mkdtempSync(join(tmpdir(), 'teck-multica-startup-kit-'));
   try {
     stageKitSources({ destination: join(root, 'kits') });
@@ -74,12 +74,15 @@ test('Multica kit configures its URLs and watches for first-time login in the ba
     assert.equal(lifecycle.config.startup[0].background, true);
     assert.equal(lifecycle.config.startup[0].user, 'agent');
     assert.ok(lifecycle.config.startup[0].env.includes('MULTICA_DAEMON_ID'));
+    assert.ok(lifecycle.config.startup[0].env.includes('MULTICA_BOOTSTRAP_PAT'));
     assert.deepEqual(lifecycle.config.startup[0].command.slice(2), ['${{ kit.args.appHost }}', '${{ kit.args.serverHost }}']);
     const script = readFileSync(join(root, 'kits', 'multica', 'start-daemon.sh'), 'utf8');
     assert.match(script, /multica config set app_url "https:\/\/\$app_host"/);
     assert.match(script, /multica config set server_url "https:\/\/\$server_host"/);
     assert.match(script, /\. \/etc\/sandbox-persistent\.sh/);
     assert.match(script, /multica auth status/);
+    assert.match(script, /multica login --token="\$\{MULTICA_BOOTSTRAP_PAT\}"/);
+    assert.match(script, /env -u MULTICA_BOOTSTRAP_PAT multica daemon start/);
     assert.match(script, /multica daemon start/);
     const models = readFileSync(join(root, 'kits', 'multica', 'models.yml'), 'utf8');
     assert.match(models, /id: teck-orchestrator/);
