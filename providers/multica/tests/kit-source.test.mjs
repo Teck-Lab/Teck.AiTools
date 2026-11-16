@@ -95,7 +95,10 @@ test('Multica kit configures its URLs and watches for first-time login in the ba
       reviewer: 'omniroute/teck-advisor',
       'security-reviewer': 'omniroute/teck-advisor',
     });
+    assert.equal(configValues.github.enabled, false);
+    assert.equal(shared.toJS().github.enabled, true);
     delete configValues.task.agentModelOverrides;
+    configValues.github.enabled = true;
     assert.deepEqual(configValues, shared.toJS());
     assert.equal(configValues.memory.backend, 'hindsight');
     assert.equal(configValues.hindsight.apiUrl, 'https://hindsight-api.tecklab.dk');

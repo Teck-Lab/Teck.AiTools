@@ -57,7 +57,10 @@ export function stageKitSources({ destination, sharedRoot = shared, providerRoot
     const match = text.match(/^task:(\r?\n)  isolation:/m);
     if (!match || text.match(/^task:(\r?\n)  isolation:/gm)?.length !== 1) throw Error('Shared OMP task settings changed; review Multica reviewer routing');
     const nl = match[1];
-    return text.replace(match[0], `task:${nl}  agentModelOverrides:${nl}    reviewer: omniroute/teck-advisor${nl}    security-reviewer: omniroute/teck-advisor${nl}  isolation:`);
+    const github = [...text.matchAll(/^github:(\r?\n)  enabled: true$/gm)];
+    if (github.length !== 1) throw Error('Shared OMP GitHub setting changed; review Multica MCP publication routing');
+    return text.replace(match[0], `task:${nl}  agentModelOverrides:${nl}    reviewer: omniroute/teck-advisor${nl}    security-reviewer: omniroute/teck-advisor${nl}  isolation:`)
+      .replace(/^github:(\r?\n)  enabled: true$/m, (_, lineBreak) => `github:${lineBreak}  enabled: false`);
   });
   for (const file of ['WATCHDOG.md', 'WATCHDOG.yml']) copy(providerRoot, `runtime/omp/${file}`, `multica/${file}`);
   walk(providerRoot, 'runtime/omp/agents', 'multica/agents');
