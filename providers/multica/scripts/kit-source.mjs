@@ -72,6 +72,10 @@ export function stageKitSources({ destination, sharedRoot = shared, providerRoot
   const workload = 'runtime/kits/workload';
   for (const name of ['devtools', 'browser', 'kubernetes']) copy(sharedRoot, `${workload}/devtools.json`, `${name}/assets/devtools.json`);
   for (const file of ['debug-tools.mjs', 'netcoredbg.LICENSE', 'kubernetes-tools.mjs']) copy(sharedRoot, `${workload}/${file}`, `devtools/assets/${file}`);
+  const devtoolsLock = JSON.parse(readFileSync(join(sharedRoot, workload, 'devtools.json'), 'utf8'));
+  if (!readFileSync(join(destination, 'devtools', 'devtools.yaml'), 'utf8').includes(`aspire@${devtoolsLock.aspire.version}`)) {
+    throw Error('Shared Aspire CLI feature does not match the pinned devtools package');
+  }
   copy(sharedRoot, `${workload}/install-devtools.mjs`, 'devtools/assets/install-devtools.mjs', text => {
     const call = 'installKubernetesTools({ lock });';
     if (text.split(call).length !== 2) throw Error('Shared devtools installer changed; review Kubernetes ownership');

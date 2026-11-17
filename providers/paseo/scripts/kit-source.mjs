@@ -88,7 +88,7 @@ export function stageKitSources({ source = repository, destination } = {}) {
   write('workflow/assets/omp/skill-snapshots.json', JSON.stringify({ source: 'Teck.Paseo staged skills', files: skills.sort((a, b) => a.name.localeCompare(b.name)) }, null, 2) + '\n');
 
   const lock = JSON.parse(readFileSync(join(source, canonical, 'devtools.json')));
-  const expected = { dotnet: lock.dotnet.version, typescript: lock.npm.typescript, kind: lock.native.kind.version, kubectl: lock.native.kubectl.version, helm: lock.native.helmCli.version };
+  const expected = { dotnet: lock.dotnet.version, aspire: lock.aspire.version, typescript: lock.npm.typescript, kind: lock.native.kind.version, kubectl: lock.native.kubectl.version, helm: lock.native.helmCli.version };
   for (const [name, version] of Object.entries(expected)) {
     const component = ['kind', 'kubectl'].includes(name) ? 'kubernetes' : 'devtools';
     if (!readFileSync(join(destination, component, `${component}.yaml`), 'utf8').includes(`${name}@${version}`)) throw Error(`Update the ${component} descriptor to match canonical ${name}@${version}`);

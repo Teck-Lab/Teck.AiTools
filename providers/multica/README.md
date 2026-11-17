@@ -9,7 +9,7 @@ The Multica web/API service is deployed separately from the sibling [Teck.Coolif
 Prerequisites: Docker Sandboxes `sbx` with v3 kit support, a reachable self-hosted Multica service, and host-side `omniroute` and `hindsight` service secrets (`sbx secret set omniroute` and `sbx secret set hindsight`). Approve their bindings to `omniroute.tecklab.dk` and `hindsight-api.tecklab.dk` when prompted. Store a Multica PAT once as a global Docker custom secret. Enter it at the prompt; do not put it on the command line:
 
 ```powershell
-sbx secret set-custom --name teck-multica --host multica.tecklab.dk --env MULTICA_BOOTSTRAP_PAT --placeholder 'mul_{rand}'
+sbx secret set-custom --host multica.tecklab.dk --env MULTICA_BOOTSTRAP_PAT --placeholder 'mul_{rand}'
 ```
 
 The `mul_` prefix is required by Multica's token login. The host proxy substitutes the real PAT only when the placeholder appears in a request header to `multica.tecklab.dk`. Use a PAT created under **Settings → API Token**. The Multica server and this kit pin v0.9.0. The OMP mixin comes directly from `../../shared/kits/omp` and pins official `@oh-my-pi/pi-coding-agent@18.20.0`.

@@ -63,6 +63,7 @@ async function initialize(command, args) {
 try {
   assert.notEqual(process.getuid(), 0, 'Run toolkit verification as the agent user');
   assert.equal(run('dotnet', ['--version']), lock.dotnet.version);
+  assert.ok(run('aspire', ['--version']).startsWith(lock.aspire.version));
   assert.equal(run('tsc', ['--version']), `Version ${lock.npm.typescript}`);
   const cs = join(root, 'csharp');
   run('dotnet', ['new', 'console', '--no-restore', '--output', cs]);
@@ -93,7 +94,7 @@ try {
   for (const binary of ['next-devtools-mcp', 'netcoredbg', 'gpg', 'git', 'gh', 'chromium', 'google-chrome-stable', 'agent-browser', ...(buildOnly ? [] : ['bun', 'bunx', 'omp'])]) {
     accessSync(run('sh', ['-c', `command -v ${binary}`]), constants.X_OK);
   }
-  const report = { uid: process.getuid(), dotnet: lock.dotnet.version, node: run('node', ['--version']),
+  const report = { uid: process.getuid(), dotnet: lock.dotnet.version, aspire: lock.aspire.version, node: run('node', ['--version']),
     bun: buildOnly ? null : run('bun', ['--version']), omp: buildOnly ? null : run('omp', ['--version']), typescript: lock.npm.typescript,
     chrome: run('google-chrome-stable', ['--version']), go: run('go', ['version']), java: run('javac', ['-version']), docker: run('docker', ['version', '--format', '{{.Server.Version}}']), uv: run('uv', ['--version']), kind: lock.native.kind.version, kubectl: lock.native.kubectl.version, helm: run('helm', ['version', '--template', '{{.Version}}']), compilers: ['C#', 'TypeScript', 'C++', 'Python', 'Go', 'Java'], languageServers: [] };
   const servers = [

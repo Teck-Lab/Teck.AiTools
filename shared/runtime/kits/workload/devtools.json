@@ -6,6 +6,9 @@
       "arm64": "58ace73ced6b4360754689a686bdfb8a317f4da6cb8bb416dbc7d0ba9f47e43e3c09f5eb1f1a1cfaacbd10df9558da4882bf2a5e195d6ab56a02c1f9f76102ed"
     }
   },
+  "aspire": {
+    "version": "13.6.5"
+  },
   "npm": {
     "typescript": "5.9.3",
     "typescript-language-server": "4.4.1",

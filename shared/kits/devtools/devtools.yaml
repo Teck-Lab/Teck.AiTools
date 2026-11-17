@@ -2,11 +2,12 @@
 schemaVersion: "3"
 kind: mixin
 displayName: Teck development tools
-description: .NET SDK, language servers and native .NET/JavaScript debuggers.
+description: .NET SDK, Aspire CLI bundle, language servers and native .NET/JavaScript debuggers.
 requires:
   - dk.tecklab/base >= 1
 provides:
   - dotnet@10.0.401
+  - aspire@13.6.5
   - typescript@5.9.3
   - helm@4.1.4
   - dk.tecklab/language-servers@1

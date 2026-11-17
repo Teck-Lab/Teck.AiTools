@@ -31,6 +31,9 @@ run('tar', ['-xzf', '/tmp/teck-dotnet.tar.gz', '-C', '/usr/share/dotnet']);
 rmSync('/tmp/teck-dotnet.tar.gz');
 link('/usr/share/dotnet/dotnet', '/usr/local/bin/dotnet');
 run('dotnet', ['--version']);
+run('dotnet', ['tool', 'install', 'Aspire.Cli', '--version', lock.aspire.version, '--tool-path', '/opt/teck-aspire']);
+link('/opt/teck-aspire/aspire', '/usr/local/bin/aspire');
+if (!execFileSync('aspire', ['--version'], { encoding: 'utf8' }).trim().startsWith(lock.aspire.version)) throw Error('Unexpected Aspire CLI version');
 
 run('npm', ['install', '--global', '--prefix', '/opt/teck-devtools', '--no-audit', '--no-fund', ...Object.entries(lock.npm).map(([name, version]) => `${name}@${version}`)]);
 for (const name of readdirSync('/opt/teck-devtools/bin')) link(`/opt/teck-devtools/bin/${name}`, `/usr/local/bin/${name}`);
@@ -53,10 +56,10 @@ if (process.argv.includes('--pack')) {
   // Keep the final kit layer below Docker's path-component inventory limit.
   // The lifecycle expands the complete toolchain into each new feature VM.
   run('tar', ['-C', '/', '-czf', '/tmp/teck-devtools-runtime.tar.gz',
-    'usr/share/dotnet', 'opt/teck-devtools', 'opt/teck-debuggers', 'usr/local/lib/omnisharp',
+    'usr/share/dotnet', 'opt/teck-aspire', 'opt/teck-devtools', 'opt/teck-debuggers', 'usr/local/lib/omnisharp',
     'home/agent/.local/opt/js-debug', 'usr/local/bin/netcoredbg',
     ...readdirSync('/opt/teck-devtools/bin').map(name => 'usr/local/bin/' + name),
-    ...['dotnet', 'omnisharp', 'marksman', 'terraform-ls', 'helm_ls', 'kind', 'kubectl', 'helm'].map(name => 'usr/local/bin/' + name)]);
+    ...['dotnet', 'aspire', 'omnisharp', 'marksman', 'terraform-ls', 'helm_ls', 'kind', 'kubectl', 'helm'].map(name => 'usr/local/bin/' + name)]);
 }
 
 }
