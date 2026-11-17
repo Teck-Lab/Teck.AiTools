@@ -12,7 +12,7 @@ Prerequisites: Docker Sandboxes `sbx` with v3 kit support, a reachable self-host
 sbx secret set-custom --host multica.tecklab.dk --env MULTICA_BOOTSTRAP_PAT --placeholder 'mul_{rand}'
 ```
 
-The `mul_` prefix is required by Multica's token login. The host proxy substitutes the real PAT only when the placeholder appears in a request header to `multica.tecklab.dk`. Use a PAT created under **Settings → API Token**. The Multica server and this kit pin v0.9.0. The OMP mixin comes directly from `../../shared/kits/omp` and pins official `@oh-my-pi/pi-coding-agent@18.20.0`.
+The `mul_` prefix is required by Multica's token login. The host proxy substitutes the real PAT only when the placeholder appears in a request header to `multica.tecklab.dk`. Use a PAT created under **Settings → API Token**. The Multica server and this kit pin v0.10.0. The OMP mixin comes directly from `../../shared/kits/omp` and pins official `@oh-my-pi/pi-coding-agent@18.20.0`.
 
 Use the digest-pinned OCI set from the successful [kit release](https://github.com/Teck-Lab/Teck.AiTools/actions/workflows/publish-kits.yml). No Teck.AiTools checkout, downloaded script, or local kit build is needed. On PowerShell, preserve the JSON quotes when allowing GHCR:
 
