@@ -1,5 +1,5 @@
 import { execFileSync } from 'node:child_process';
-import { chmodSync, mkdirSync, readFileSync, readdirSync, rmSync, symlinkSync } from 'node:fs';
+import { chmodSync, mkdirSync, readFileSync, readdirSync, realpathSync, rmSync, symlinkSync } from 'node:fs';
 import { installKubernetesTools } from './kubernetes-tools.mjs';
 import { installDebugTools } from './debug-tools.mjs';
 
@@ -32,6 +32,9 @@ rmSync('/tmp/teck-dotnet.tar.gz');
 link('/usr/share/dotnet/dotnet', '/usr/local/bin/dotnet');
 run('dotnet', ['--version']);
 run('dotnet', ['tool', 'install', 'Aspire.Cli', '--version', lock.aspire.version, '--tool-path', '/opt/teck-aspire']);
+// dotnet tool install can leave the real entrypoint at 0744. Root smoke checks
+// still pass, but Multica's unprivileged agent then gets EACCES (ASPIRE009).
+chmodSync(realpathSync('/opt/teck-aspire/aspire'), 0o755);
 link('/opt/teck-aspire/aspire', '/usr/local/bin/aspire');
 if (!execFileSync('aspire', ['--version'], { encoding: 'utf8' }).trim().startsWith(lock.aspire.version)) throw Error('Unexpected Aspire CLI version');
 
