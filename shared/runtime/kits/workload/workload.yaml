@@ -81,8 +81,8 @@ capabilities:
             test -f /home/agent/.local/opt/js-debug/src/dapDebugServer.js
             install -d -o agent -g agent -m 755 /home/agent/.local/opt
             chown -h agent:agent /home/agent/.local/opt/js-debug
-            install -d -o agent -g agent -m 755 /home/agent/.dotnet /home/agent/.nuget
-            chown -R agent:agent /home/agent/.dotnet /home/agent/.nuget
+            install -d -o agent -g agent -m 755 /home/agent/.dotnet /home/agent/.nuget /home/agent/.aspire
+            chown -R agent:agent /home/agent/.dotnet /home/agent/.nuget /home/agent/.aspire
             install -d -o agent -g agent -m 755 /home/agent/.bun /home/agent/.bun/install /home/agent/.bun/install/cache
             chown -R agent:agent /home/agent/.bun/install/cache
             /bin/sh /usr/local/lib/teck-devtools/kubernetes-prerequisites.sh --install

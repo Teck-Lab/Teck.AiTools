@@ -17,6 +17,6 @@ capabilities:
   - type: com.docker.sandbox/lifecycle@1
     config:
       install:
-        - command: install -d -o agent -g agent -m 700 /home/agent/.dotnet /home/agent/.nuget
+        - command: install -d -o agent -g agent -m 700 /home/agent/.dotnet /home/agent/.nuget /home/agent/.aspire
           user: "0"
           description: Initialize per-agent SDK state.
