@@ -41,7 +41,7 @@ while :; do
                 --device-name "$name" \
                 --runtime-name "OMP sandbox" \
                 --workspaces-root /home/agent/multica_workspaces \
-                --max-concurrent-tasks 1 \
+                --max-concurrent-tasks 2 \
                 --no-auto-update; then
                 sleep 15
                 continue

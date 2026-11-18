@@ -14,6 +14,8 @@ sbx secret set-custom --host multica.tecklab.dk --env MULTICA_BOOTSTRAP_PAT --pl
 
 The `mul_` prefix is required by Multica's token login. The host proxy substitutes the real PAT only when the placeholder appears in a request header to `multica.tecklab.dk`. Use a PAT created under **Settings → API Token**. The Multica server and this kit pin v0.10.0. The OMP mixin comes directly from `../../shared/kits/omp` and pins official `@oh-my-pi/pi-coding-agent@18.20.0`.
 
+The sandbox daemon allows two concurrent Multica runs so independent frontend and backend issues can execute together. Agent-level concurrency settings can still impose a lower limit. Runs beyond the available slots stay queued until a slot is free.
+
 Use the digest-pinned OCI set from the successful [kit release](https://github.com/Teck-Lab/Teck.AiTools/actions/workflows/publish-kits.yml). No Teck.AiTools checkout, downloaded script, or local kit build is needed. On PowerShell, preserve the JSON quotes when allowing GHCR:
 
 ```powershell
