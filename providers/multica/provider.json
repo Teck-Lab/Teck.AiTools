@@ -6,7 +6,7 @@
   "sharedKitSource": "../../shared",
   "sandboxNames": ["teck-multica-omp-1", "teck-multica-omp-2"],
   "upstream": {
-    "multica": "v0.10.0",
+    "multica": "v0.11.0",
     "ohMyPi": "v18.20.0"
   }
 }
