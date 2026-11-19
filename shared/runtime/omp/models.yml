@@ -7,42 +7,56 @@ providers:
     models:
       - id: teck-orchestrator
         name: Orchestrator
+        headers:
+          x-omniroute-compression: teck-coordination
         contextWindow: 700000
         maxTokens: 32768
         reasoning: true
         thinking: { mode: effort, efforts: [low, medium, high, xhigh, max], defaultLevel: high }
       - id: teck-advisor
         name: Advisor
+        headers:
+          x-omniroute-compression: teck-coordination
         contextWindow: 700000
         maxTokens: 32768
         reasoning: true
         thinking: { mode: effort, efforts: [low, medium, high, xhigh, max], defaultLevel: medium }
       - id: teck-judge
         name: Judge
+        headers:
+          x-omniroute-compression: teck-coordination
         contextWindow: 1000000
         maxTokens: 32768
         reasoning: true
         thinking: { mode: effort, efforts: [low, medium, high], defaultLevel: high }
       - id: teck-executor
         name: Executor
+        headers:
+          x-omniroute-compression: teck-execution
         contextWindow: 500000
         maxTokens: 32768
         reasoning: true
         thinking: { mode: effort, efforts: [low, medium, high, xhigh, max], defaultLevel: high }
       - id: teck-fast-tool
         name: Fast Tool
+        headers:
+          x-omniroute-compression: teck-execution
         contextWindow: 250000
         maxTokens: 32768
         reasoning: true
         thinking: { mode: effort, efforts: [low, medium, high, xhigh, max], defaultLevel: medium }
       - id: teck-fast-text
         name: Fast Text
+        headers:
+          x-omniroute-compression: teck-text
         contextWindow: 250000
         maxTokens: 32768
         reasoning: true
         thinking: { mode: effort, efforts: [low, medium, high, xhigh, max], defaultLevel: medium }
       - id: teck-researcher
         name: Researcher
+        headers:
+          x-omniroute-compression: teck-coordination
         contextWindow: 250000
         maxTokens: 32768
         reasoning: true

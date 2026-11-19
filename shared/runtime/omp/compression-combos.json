@@ -1,0 +1,62 @@
+[
+  {
+    "name": "teck-coordination",
+    "description": "Preserve issue, PR, review, and research evidence while condensing structured tool output and prose.",
+    "pipeline": [
+      { "engine": "session-dedup" },
+      { "engine": "headroom" },
+      {
+        "engine": "rtk",
+        "intensity": "standard",
+        "config": {
+          "enabled": true,
+          "applyToToolResults": true,
+          "applyToCodeBlocks": false,
+          "applyToAssistantMessages": false,
+          "rawOutputRetention": "failures",
+          "rawOutputMaxBytes": 1048576,
+          "rawOutputMaxFiles": 250,
+          "rawOutputMaxAgeDays": 7
+        }
+      },
+      { "engine": "caveman", "intensity": "lite" }
+    ],
+    "outputMode": false,
+    "outputStyles": []
+  },
+  {
+    "name": "teck-execution",
+    "description": "Condense build, test, git, and tool output for coding agents, then compress remaining prose.",
+    "pipeline": [
+      { "engine": "session-dedup" },
+      { "engine": "headroom" },
+      {
+        "engine": "rtk",
+        "intensity": "standard",
+        "config": {
+          "enabled": true,
+          "applyToToolResults": true,
+          "applyToCodeBlocks": false,
+          "applyToAssistantMessages": false,
+          "rawOutputRetention": "failures",
+          "rawOutputMaxBytes": 1048576,
+          "rawOutputMaxFiles": 250,
+          "rawOutputMaxAgeDays": 7
+        }
+      },
+      { "engine": "caveman", "intensity": "full" }
+    ],
+    "outputMode": false,
+    "outputStyles": []
+  },
+  {
+    "name": "teck-text",
+    "description": "Compress the prompt for short commit-message and memory text tasks without shell-output filters.",
+    "pipeline": [
+      { "engine": "session-dedup" },
+      { "engine": "caveman", "intensity": "full" }
+    ],
+    "outputMode": false,
+    "outputStyles": []
+  }
+]
