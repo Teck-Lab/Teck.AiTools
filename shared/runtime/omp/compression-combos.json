@@ -5,20 +5,7 @@
     "pipeline": [
       { "engine": "session-dedup" },
       { "engine": "headroom" },
-      {
-        "engine": "rtk",
-        "intensity": "standard",
-        "config": {
-          "enabled": true,
-          "applyToToolResults": true,
-          "applyToCodeBlocks": false,
-          "applyToAssistantMessages": false,
-          "rawOutputRetention": "failures",
-          "rawOutputMaxBytes": 1048576,
-          "rawOutputMaxFiles": 250,
-          "rawOutputMaxAgeDays": 7
-        }
-      },
+      { "engine": "rtk" },
       { "engine": "caveman", "intensity": "lite" }
     ],
     "outputMode": false,
@@ -30,20 +17,7 @@
     "pipeline": [
       { "engine": "session-dedup" },
       { "engine": "headroom" },
-      {
-        "engine": "rtk",
-        "intensity": "standard",
-        "config": {
-          "enabled": true,
-          "applyToToolResults": true,
-          "applyToCodeBlocks": false,
-          "applyToAssistantMessages": false,
-          "rawOutputRetention": "failures",
-          "rawOutputMaxBytes": 1048576,
-          "rawOutputMaxFiles": 250,
-          "rawOutputMaxAgeDays": 7
-        }
-      },
+      { "engine": "rtk" },
       { "engine": "caveman", "intensity": "full" }
     ],
     "outputMode": false,

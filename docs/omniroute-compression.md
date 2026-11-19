@@ -4,15 +4,21 @@ The shared OMP `models.yml` selects one named OmniRoute compression combo per mo
 
 | Combo | OMP models | Pipeline |
 | --- | --- | --- |
-| `teck-coordination` | `teck-orchestrator`, `teck-advisor`, `teck-judge`, `teck-researcher` | session-dedup → headroom → RTK standard → Caveman lite |
-| `teck-execution` | `teck-executor`, `teck-fast-tool` | session-dedup → headroom → RTK standard → Caveman full |
+| `teck-coordination` | `teck-orchestrator`, `teck-advisor`, `teck-judge`, `teck-researcher` | session-dedup → headroom → RTK → Caveman lite |
+| `teck-execution` | `teck-executor`, `teck-fast-tool` | session-dedup → headroom → RTK → Caveman full |
 | `teck-text` | `teck-fast-text` | session-dedup → Caveman full |
 
-The text combo has no shell or JSON filters because OMP uses `teck-fast-text` for commit and memory text. All combos leave Caveman output mode off. RTK does not rewrite code blocks or assistant messages. Its retained raw output is limited to failures, 250 files, seven days, and 1 MiB per result.
+The text combo has no shell or JSON filters because OMP uses `teck-fast-text` for commit and memory text. All combos leave Caveman output mode off. The OmniRoute UI exposes RTK configuration globally, so the RTK step in either combo uses the same global settings.
 
 These profiles omit CCR and ionizer, which create retrieval references requiring OmniRoute's CCR MCP tool. They also omit a final Lite stage: in a stacked pipeline Lite can truncate older tool results, including evidence an agent may still need. The configured session-dedup stage produces look-back markers only for content already present earlier in the session.
 
-## Create or update the server-side combos
+## Create the combos in OmniRoute
+
+Under **Context & Cache → RTK**, enable RTK and configure it once: intensity **standard**, Tool Results **on**, Code Blocks **off**, Assistant Messages **off**. For recoverable diagnostics, set raw-output retention to **Failures**, maximum size **1 MiB**, maximum files **250**, and maximum age **7 days** if those controls are available. Check that the compression master switch and Caveman engine are enabled.
+
+Under **Context & Cache → Compression Combos**, create each named combo from the table above. Add its pipeline steps in the listed order. The RTK steps have no combo-specific settings. Set Output Mode **off**, leave Output Styles empty, and do not make any of these the global default. The OMP model header selects the named combo, so routing-combo assignment is unnecessary.
+
+## Alternative: create or update through the API
 
 Use an OmniRoute API key with the `manage` scope. The OMP inference key does not have this scope and must not be expanded just to configure compression. From this repository in PowerShell:
 
