@@ -98,9 +98,13 @@ test('Multica kit configures its URLs and bootstraps daemon auth from the Docker
       reviewer: 'omniroute/teck-advisor',
       'security-reviewer': 'omniroute/teck-advisor',
     });
+    assert.equal(configValues.task.eager, 'preferred');
+    assert.equal(configValues.task.isolation.enabled, true);
     assert.equal(configValues.github.enabled, false);
     assert.equal(shared.toJS().github.enabled, true);
     delete configValues.task.agentModelOverrides;
+    delete configValues.task.eager;
+    configValues.task.isolation.enabled = false;
     configValues.github.enabled = true;
     assert.deepEqual(configValues, shared.toJS());
     assert.equal(configValues.memory.backend, 'hindsight');

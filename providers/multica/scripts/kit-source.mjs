@@ -54,12 +54,12 @@ export function stageKitSources({ destination, sharedRoot = shared, providerRoot
   walk(providerRoot, 'kits/multica', 'multica');
   copy(sharedRoot, 'runtime/omp/models.yml', 'multica/models.yml');
   copy(sharedRoot, 'runtime/omp/config.yml', 'multica/config.yml', text => {
-    const match = text.match(/^task:(\r?\n)  isolation:/m);
-    if (!match || text.match(/^task:(\r?\n)  isolation:/gm)?.length !== 1) throw Error('Shared OMP task settings changed; review Multica reviewer routing');
+    const match = text.match(/^task:(\r?\n)  isolation:\r?\n    enabled: false$/m);
+    if (!match || text.match(/^task:(\r?\n)  isolation:/gm)?.length !== 1) throw Error('Shared OMP task settings changed; review Multica task isolation');
     const nl = match[1];
     const github = [...text.matchAll(/^github:(\r?\n)  enabled: true$/gm)];
     if (github.length !== 1) throw Error('Shared OMP GitHub setting changed; review Multica MCP publication routing');
-    return text.replace(match[0], `task:${nl}  agentModelOverrides:${nl}    reviewer: omniroute/teck-advisor${nl}    security-reviewer: omniroute/teck-advisor${nl}  isolation:`)
+    return text.replace(match[0], `task:${nl}  agentModelOverrides:${nl}    reviewer: omniroute/teck-advisor${nl}    security-reviewer: omniroute/teck-advisor${nl}  eager: preferred${nl}  isolation:${nl}    enabled: true`)
       .replace(/^github:(\r?\n)  enabled: true$/m, (_, lineBreak) => `github:${lineBreak}  enabled: false`);
   });
   for (const file of ['WATCHDOG.md', 'WATCHDOG.yml']) copy(providerRoot, `runtime/omp/${file}`, `multica/${file}`);
