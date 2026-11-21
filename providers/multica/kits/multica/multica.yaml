@@ -5,9 +5,9 @@ displayName: Multica daemon
 description: Pinned Multica CLI, shared OMP skills and Hindsight memory, and startup hook.
 requires:
   - dk.tecklab/base >= 1
-  - omp >= 18.20.0
+  - omp >= 19.0.1
 provides:
-  - dk.tecklab/multica@0.11.0
+  - dk.tecklab/multica@0.11.1
 args:
   appHost:
     required: true

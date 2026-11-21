@@ -59,8 +59,10 @@ export function stageKitSources({ destination, sharedRoot = shared, providerRoot
     const nl = match[1];
     const github = [...text.matchAll(/^github:(\r?\n)  enabled: true$/gm)];
     if (github.length !== 1) throw Error('Shared OMP GitHub setting changed; review Multica MCP publication routing');
-    return text.replace(match[0], `task:${nl}  agentModelOverrides:${nl}    reviewer: omniroute/teck-advisor${nl}    security-reviewer: omniroute/teck-advisor${nl}  eager: preferred${nl}  isolation:${nl}    enabled: true`)
+    if (/^bash:/m.test(text)) throw Error('Shared OMP bash policy changed; review Multica GitHub MCP enforcement');
+    const config = text.replace(match[0], `task:${nl}  agentModelOverrides:${nl}    reviewer: omniroute/teck-advisor${nl}    security-reviewer: omniroute/teck-advisor${nl}  eager: preferred${nl}  isolation:${nl}    enabled: true`)
       .replace(/^github:(\r?\n)  enabled: true$/m, (_, lineBreak) => `github:${lineBreak}  enabled: false`);
+    return `${config}${config.endsWith(nl) ? '' : nl}bash:${nl}  patterns:${nl}    - match: "git commit*"${nl}      approval: deny${nl}    - match: "git push*"${nl}      approval: deny${nl}    - match: "git -C * commit*"${nl}      approval: deny${nl}    - match: "git -C * push*"${nl}      approval: deny${nl}    - match: "git -c * commit*"${nl}      approval: deny${nl}    - match: "git -c * push*"${nl}      approval: deny${nl}    - match: "gh *"${nl}      approval: deny${nl}`;
   });
   for (const file of ['WATCHDOG.md', 'WATCHDOG.yml']) copy(providerRoot, `runtime/omp/${file}`, `multica/${file}`);
   walk(providerRoot, 'runtime/omp/agents', 'multica/agents');

@@ -101,11 +101,16 @@ test('Multica kit configures its URLs and bootstraps daemon auth from the Docker
     assert.equal(configValues.task.eager, 'preferred');
     assert.equal(configValues.task.isolation.enabled, true);
     assert.equal(configValues.github.enabled, false);
+    assert.deepEqual(configValues.bash.patterns, [
+      'git commit*', 'git push*', 'git -C * commit*', 'git -C * push*',
+      'git -c * commit*', 'git -c * push*', 'gh *',
+    ].map(match => ({ match, approval: 'deny' })));
     assert.equal(shared.toJS().github.enabled, true);
     delete configValues.task.agentModelOverrides;
     delete configValues.task.eager;
     configValues.task.isolation.enabled = false;
     configValues.github.enabled = true;
+    delete configValues.bash;
     assert.deepEqual(configValues, shared.toJS());
     assert.equal(configValues.memory.backend, 'hindsight');
     assert.equal(configValues.hindsight.apiUrl, 'https://hindsight-api.tecklab.dk');
