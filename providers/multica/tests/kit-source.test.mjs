@@ -64,6 +64,8 @@ test('Multica kit configures its URLs and bootstraps daemon auth from the Docker
     const mixin = descriptor.toJS();
     assert.equal(mixin.args.appHost.env, undefined);
     assert.equal(mixin.args.serverHost.env, undefined);
+    const network = mixin.capabilities.find(capability => capability.type === 'com.docker.sandbox/network-policy@1');
+    assert.ok(network.config.runtime.allow.includes('auth.openai.com:443'));
     const lifecycle = mixin.capabilities.find(capability => capability.type === 'com.docker.sandbox/lifecycle@1');
     assert.match(lifecycle.config.install[1].command, /models\.yml \/home\/agent\/\.omp\/agent\/models\.yml/);
     assert.match(lifecycle.config.install[2].command, /config\.yml \/home\/agent\/\.omp\/agent\/config\.yml/);
