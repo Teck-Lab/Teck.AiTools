@@ -1,0 +1,7 @@
+{
+  "name": "teck-code-tools",
+  "version": "1.0.0",
+  "description": "Code intelligence and live debugging using the sandbox toolchain",
+  "author": { "name": "Teck Lab" },
+  "lspServers": "./.lsp.json"
+}

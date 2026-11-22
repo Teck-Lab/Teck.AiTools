@@ -1,0 +1,12 @@
+{
+  "name": "teck-sandbox",
+  "description": "Code intelligence and debugging for Teck sandboxes",
+  "owner": { "name": "Teck Lab" },
+  "plugins": [
+    {
+      "name": "teck-code-tools",
+      "source": "./plugins/teck-code-tools",
+      "description": "Sandbox language servers and headless debugger"
+    }
+  ]
+}
