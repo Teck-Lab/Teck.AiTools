@@ -14,9 +14,9 @@ capabilities:
   - type: com.docker.sandbox/lifecycle@1
     config:
       install:
-        - command: install -d -o agent -g agent -m 700 /home/agent/.omp /home/agent/.omp/run /home/agent/.bun/install/cache
+        - command: install -d -o agent -g agent -m 700 /home/agent/.omp /home/agent/.omp/run /home/agent/.bun/install/cache /home/agent/.claude
           user: "0"
-          description: Initialize writable OMP session and Bun cache directories.
+          description: Initialize writable OMP, Bun, and Claude directories.
         - command: claude plugin marketplace add /opt/teck-claude-marketplace && claude plugin install teck-code-tools@teck-sandbox --scope user
           user: agent
           description: Install sandbox language servers and debugger plugin for Claude Code.
