@@ -24,7 +24,6 @@ capabilities:
           - "${{ kit.args.serverHost }}:443"
           - api.anthropic.com:443
           - api.openai.com:443
-          - auth.openai.com:443
           - api.openrouter.ai:443
           - generativelanguage.googleapis.com:443
   - type: com.docker.sandbox/lifecycle@1

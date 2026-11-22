@@ -65,7 +65,7 @@ test('Multica kit configures its URLs and bootstraps daemon auth from the Docker
     assert.equal(mixin.args.appHost.env, undefined);
     assert.equal(mixin.args.serverHost.env, undefined);
     const network = mixin.capabilities.find(capability => capability.type === 'com.docker.sandbox/network-policy@1');
-    assert.ok(network.config.runtime.allow.includes('auth.openai.com:443'));
+    assert.ok(!network.config.runtime.allow.includes('auth.openai.com:443'));
     const lifecycle = mixin.capabilities.find(capability => capability.type === 'com.docker.sandbox/lifecycle@1');
     assert.match(lifecycle.config.install[1].command, /models\.yml \/home\/agent\/\.omp\/agent\/models\.yml/);
     assert.match(lifecycle.config.install[2].command, /config\.yml \/home\/agent\/\.omp\/agent\/config\.yml/);
@@ -94,9 +94,18 @@ test('Multica kit configures its URLs and bootstraps daemon auth from the Docker
     assert.match(script, /env -u MULTICA_BOOTSTRAP_PAT multica daemon start/);
     assert.match(script, /multica daemon start/);
     assert.match(script, /127\.0\.0\.1:8787\/health/);
-    const models = readFileSync(join(root, 'kits', 'multica', 'models.yml'), 'utf8');
-    assert.match(models, /baseUrl: http:\/\/127\.0\.0\.1:8787\/backend-api/);
-    assert.match(models, /apiKey: LITELLM_API_KEY/);
+    const models = YAML.parseDocument(readFileSync(join(root, 'kits', 'multica', 'models.yml'), 'utf8'));
+    assert.deepEqual(models.errors, []);
+    const modelProvider = models.toJS().providers.litellm;
+    assert.equal(modelProvider.baseUrl, 'http://127.0.0.1:8787/v1');
+    assert.equal(modelProvider.apiKey, 'LITELLM_API_KEY');
+    assert.equal(models.toJS().providers['openai-codex'], undefined);
+    assert.deepEqual(modelProvider.models.map(({ id }) => id), [
+      'teck-orchestrator', 'teck-advisor', 'teck-executor', 'teck-judge',
+      'teck-fast-tool', 'teck-fast-text', 'teck-researcher',
+    ]);
+    assert.ok(modelProvider.models.slice(0, 3).every(({ api }) => api === 'openai-responses'));
+    assert.ok(modelProvider.models.slice(3).every(({ api }) => api === undefined));
     const configText = readFileSync(join(root, 'kits', 'multica', 'config.yml'), 'utf8');
     const sharedText = readFileSync(join(import.meta.dirname, '../../../shared/runtime/omp/config.yml'), 'utf8');
     const config = YAML.parseDocument(configText);
@@ -105,8 +114,8 @@ test('Multica kit configures its URLs and bootstraps daemon auth from the Docker
     assert.deepEqual(shared.errors, []);
     const configValues = config.toJS();
     assert.deepEqual(configValues.task.agentModelOverrides, {
-      reviewer: 'openai-codex/gpt-6.2-sol',
-      'security-reviewer': 'openai-codex/gpt-6.2-sol',
+      reviewer: 'litellm/teck-advisor',
+      'security-reviewer': 'litellm/teck-advisor',
     });
     assert.equal(configValues.task.eager, 'preferred');
     assert.equal(configValues.task.isolation.enabled, true);
@@ -117,9 +126,12 @@ test('Multica kit configures its URLs and bootstraps daemon auth from the Docker
       'rtk git push*', 'rtk gh *', 'rtk run*', 'rtk bypass*', 'rtk proxy*',
     ].map(match => ({ match, approval: 'deny' })));
     assert.equal(shared.toJS().github.enabled, true);
-    assert.equal(configValues.modelRoles.default, 'openai-codex/gpt-6.2-sol');
+    assert.equal(configValues.modelRoles.default, 'litellm/teck-orchestrator');
+    assert.equal(configValues.modelRoles.advisor, 'litellm/teck-advisor');
+    assert.equal(configValues.modelRoles.task, 'litellm/teck-executor');
+    assert.equal(configValues.modelRoles.judge, 'litellm/teck-judge');
     assert.equal(configValues.modelRoles.smol, 'litellm/teck-fast-tool');
-    assert.equal(configValues.providers.openaiWebsockets, 'off');
+    assert.equal(configValues.providers.openaiWebsockets, undefined);
     assert.equal(configValues.providers.maxInFlightRequests.litellm, 4);
     assert.equal(configValues.memory.backend, 'hindsight');
     assert.equal(configValues.hindsight.apiUrl, 'https://hindsight-api.tecklab.dk');
@@ -137,7 +149,7 @@ test('Multica kit configures its URLs and bootstraps daemon auth from the Docker
       'Implementation watchdog', 'Architecture', 'Security', 'Fixer', 'Final reviewer', 'Release',
     ]);
     assert.deepEqual(advisors.filter(({ enabled }) => enabled).map(({ name }) => name), ['Implementation watchdog']);
-    assert.ok(advisors.every(({ model }) => !model || model.startsWith('openai-codex/gpt-6.2-sol')));
+    assert.ok(advisors.every(({ model }) => !model || model.startsWith('litellm/teck-advisor')));
     assert.match(reviewer, /^---\nname: quality-reviewer/m);
     assert.match(reviewer, /^model: "@advisor"$/m);
   } finally {
