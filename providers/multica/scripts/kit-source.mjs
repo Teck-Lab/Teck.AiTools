@@ -60,16 +60,15 @@ export function stageKitSources({ destination, sharedRoot = shared, providerRoot
     const github = [...text.matchAll(/^github:(\r?\n)  enabled: true$/gm)];
     if (github.length !== 1) throw Error('Shared OMP GitHub setting changed; review Multica MCP publication routing');
     if (/^bash:/m.test(text)) throw Error('Shared OMP bash policy changed; review Multica GitHub MCP enforcement');
-    const config = text.replace(match[0], `task:${nl}  agentModelOverrides:${nl}    reviewer: openai-codex/gpt-6.2-sol${nl}    security-reviewer: openai-codex/gpt-6.2-sol${nl}  eager: preferred${nl}  isolation:${nl}    enabled: true`)
-      .replaceAll('omniroute/teck-orchestrator', 'openai-codex/gpt-6.2-sol')
-      .replaceAll('omniroute/teck-advisor', 'openai-codex/gpt-6.2-sol')
-      .replaceAll('omniroute/teck-executor', 'openai-codex/gpt-6.2-sol')
-      .replaceAll('omniroute/teck-judge', 'litellm/teck-fast-tool')
+    const config = text.replace(match[0], `task:${nl}  agentModelOverrides:${nl}    reviewer: litellm/teck-advisor${nl}    security-reviewer: litellm/teck-advisor${nl}  eager: preferred${nl}  isolation:${nl}    enabled: true`)
+      .replaceAll('omniroute/teck-orchestrator', 'litellm/teck-orchestrator')
+      .replaceAll('omniroute/teck-advisor', 'litellm/teck-advisor')
+      .replaceAll('omniroute/teck-executor', 'litellm/teck-executor')
+      .replaceAll('omniroute/teck-judge', 'litellm/teck-judge')
       .replaceAll('omniroute/teck-fast-tool', 'litellm/teck-fast-tool')
       .replaceAll('omniroute/teck-fast-text', 'litellm/teck-fast-text')
       .replaceAll('omniroute/teck-researcher', 'litellm/teck-researcher')
       .replace('    omniroute: 4', '    litellm: 4')
-      .replace('  maxInFlightRequests:', `  openaiWebsockets: off${nl}  maxInFlightRequests:`)
       .replace(/^github:(\r?\n)  enabled: true$/m, (_, lineBreak) => `github:${lineBreak}  enabled: false`);
     return `${config}${config.endsWith(nl) ? '' : nl}bash:${nl}  patterns:${nl}    - match: "git commit*"${nl}      approval: deny${nl}    - match: "git push*"${nl}      approval: deny${nl}    - match: "git -C * commit*"${nl}      approval: deny${nl}    - match: "git -C * push*"${nl}      approval: deny${nl}    - match: "git -c * commit*"${nl}      approval: deny${nl}    - match: "git -c * push*"${nl}      approval: deny${nl}    - match: "gh *"${nl}      approval: deny${nl}    - match: "rtk git commit*"${nl}      approval: deny${nl}    - match: "rtk git push*"${nl}      approval: deny${nl}    - match: "rtk gh *"${nl}      approval: deny${nl}    - match: "rtk run*"${nl}      approval: deny${nl}    - match: "rtk bypass*"${nl}      approval: deny${nl}    - match: "rtk proxy*"${nl}      approval: deny${nl}`;
   });
