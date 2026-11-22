@@ -3,14 +3,14 @@ set -eu
 
 # The request header is fixed in models.yml. This explicit allowlist permits
 # Headroom to use the sandbox's outbound proxy for that one upstream.
-export HEADROOM_ALLOWED_BASE_URLS=https://litellm.tecklab.dk
+export HEADROOM_ALLOWED_BASE_URLS=https://litellm.tecklab.dk,https://omniroute.tecklab.dk
 export HEADROOM_BEACON=off
 
 while :; do
     /opt/headroom/bin/headroom proxy \
         --host 127.0.0.1 \
         --port 8787 \
-        --openai-api-url https://litellm.tecklab.dk \
+        --openai-api-url https://omniroute.tecklab.dk \
         --mode cache \
         --no-cache \
         --no-rate-limit

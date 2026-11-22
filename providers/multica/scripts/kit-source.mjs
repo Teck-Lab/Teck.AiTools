@@ -5,7 +5,7 @@ import { fileURLToPath } from 'node:url';
 
 const provider = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const shared = resolve(provider, '../../shared');
-export const kitNames = Object.freeze(['base', 'omp', 'devtools', 'browser', 'kubernetes', 'litellm', 'mcphub', 'multica']);
+export const kitNames = Object.freeze(['base', 'omp', 'devtools', 'browser', 'kubernetes', 'litellm', 'omniroute', 'mcphub', 'multica']);
 const slash = value => value.replaceAll('\\', '/');
 const sha256 = bytes => createHash('sha256').update(bytes).digest('hex');
 
@@ -50,6 +50,7 @@ export function stageKitSources({ destination, sharedRoot = shared, providerRoot
   // The LiteLLM mixin binds the host-side virtual key for every OMP run,
   // including Multica's temporary Agent Builder.
   walk(providerRoot, 'kits/litellm', 'litellm');
+  walk(sharedRoot, 'kits/omniroute', 'omniroute');
   walk(providerRoot, 'kits/mcphub', 'mcphub');
   walk(providerRoot, 'kits/multica', 'multica');
   copy(providerRoot, 'runtime/omp/models.yml', 'multica/models.yml');
@@ -60,15 +61,9 @@ export function stageKitSources({ destination, sharedRoot = shared, providerRoot
     const github = [...text.matchAll(/^github:(\r?\n)  enabled: true$/gm)];
     if (github.length !== 1) throw Error('Shared OMP GitHub setting changed; review Multica MCP publication routing');
     if (/^bash:/m.test(text)) throw Error('Shared OMP bash policy changed; review Multica GitHub MCP enforcement');
-    const config = text.replace(match[0], `task:${nl}  agentModelOverrides:${nl}    reviewer: litellm/teck-advisor${nl}    security-reviewer: litellm/teck-advisor${nl}  eager: preferred${nl}  isolation:${nl}    enabled: true`)
-      .replaceAll('omniroute/teck-orchestrator', 'litellm/teck-orchestrator')
-      .replaceAll('omniroute/teck-advisor', 'litellm/teck-advisor')
-      .replaceAll('omniroute/teck-executor', 'litellm/teck-executor')
-      .replaceAll('omniroute/teck-judge', 'litellm/teck-judge')
-      .replaceAll('omniroute/teck-fast-tool', 'litellm/teck-fast-tool')
-      .replaceAll('omniroute/teck-fast-text', 'litellm/teck-fast-text')
-      .replaceAll('omniroute/teck-researcher', 'litellm/teck-researcher')
-      .replace('    omniroute: 4', '    litellm: 4')
+    const config = text.replace(match[0], `task:${nl}  agentModelOverrides:${nl}    reviewer: omniroute/teck-advisor${nl}    security-reviewer: omniroute/teck-advisor${nl}  eager: preferred${nl}  isolation:${nl}    enabled: true`)
+      .replace(`  - omniroute/teck-researcher${nl}`, `  - omniroute/teck-researcher${nl}${['teck-orchestrator', 'teck-advisor', 'teck-executor', 'teck-fast-tool', 'teck-fast-text', 'teck-judge', 'teck-researcher'].map(id => `  - litellm/${id}${nl}`).join('')}`)
+      .replace('    omniroute: 4', `    omniroute: 4${nl}    litellm: 4`)
       .replace(/^github:(\r?\n)  enabled: true$/m, (_, lineBreak) => `github:${lineBreak}  enabled: false`);
     return `${config}${config.endsWith(nl) ? '' : nl}bash:${nl}  patterns:${nl}    - match: "git commit*"${nl}      approval: deny${nl}    - match: "git push*"${nl}      approval: deny${nl}    - match: "git -C * commit*"${nl}      approval: deny${nl}    - match: "git -C * push*"${nl}      approval: deny${nl}    - match: "git -c * commit*"${nl}      approval: deny${nl}    - match: "git -c * push*"${nl}      approval: deny${nl}    - match: "gh *"${nl}      approval: deny${nl}    - match: "rtk git commit*"${nl}      approval: deny${nl}    - match: "rtk git push*"${nl}      approval: deny${nl}    - match: "rtk gh *"${nl}      approval: deny${nl}    - match: "rtk run*"${nl}      approval: deny${nl}    - match: "rtk bypass*"${nl}      approval: deny${nl}    - match: "rtk proxy*"${nl}      approval: deny${nl}`;
   });

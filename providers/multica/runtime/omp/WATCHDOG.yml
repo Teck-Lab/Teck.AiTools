@@ -41,7 +41,7 @@ advisors:
     enabled: false
     reviewMode: turn
     reviewInterval: 5
-    model: litellm/teck-advisor:medium
+    model: omniroute/teck-advisor:medium
     tools: [read, grep, glob]
     instructions: |
       Review changed public interfaces, module boundaries, and dependency direction.
@@ -53,7 +53,7 @@ advisors:
     enabled: false
     reviewMode: turn
     reviewInterval: 5
-    model: litellm/teck-advisor:medium
+    model: omniroute/teck-advisor:medium
     tools: [read, grep, glob]
     instructions: |
       Review changed authentication, authorization, tenant isolation, untrusted input,
@@ -66,7 +66,7 @@ advisors:
     enabled: false
     reviewMode: agent-end
     reviewInterval: 1
-    model: litellm/teck-advisor:high
+    model: omniroute/teck-advisor:high
     tools: [read, grep, glob]
     instructions: |
       Diagnose an observed failing test, build error, or reproduced regression in the
@@ -78,7 +78,7 @@ advisors:
     enabled: false
     reviewMode: agent-end
     reviewInterval: 3
-    model: litellm/teck-advisor:high
+    model: omniroute/teck-advisor:high
     tools: [read, grep, glob]
     instructions: |
       Compare completion claims with the current request and recorded evidence.
