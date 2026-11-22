@@ -14,6 +14,11 @@ multica config set server_url "https://$server_host"
 
 name="${TECK_MULTICA_SANDBOX_NAME:-${SANDBOX_NAME:-$(hostname)}}"
 while :; do
+    if ! curl -fsS --max-time 2 http://127.0.0.1:8787/health >/dev/null 2>&1; then
+        echo "Headroom is not ready; delaying Multica daemon startup." >&2
+        sleep 5
+        continue
+    fi
     running="$(multica daemon status 2>&1 || true)"
     case "$running" in
         *"Daemon: running"*) sleep 15; continue ;;

@@ -1,0 +1,29 @@
+providers:
+  # Keep OMP's built-in OAuth login and model catalog. Headroom relays the
+  # native Codex path to LiteLLM; no ChatGPT refresh token lives on the server.
+  openai-codex:
+    baseUrl: http://127.0.0.1:8787/backend-api
+    headers:
+      x-headroom-base-url: https://litellm.tecklab.dk
+      x-litellm-api-key: LITELLM_API_KEY
+
+  litellm:
+    baseUrl: http://127.0.0.1:8787/v1
+    api: openai-completions
+    apiKey: LITELLM_API_KEY
+    authHeader: true
+    headers:
+      x-headroom-base-url: https://litellm.tecklab.dk
+    models:
+      - id: teck-fast-tool
+        name: Fast Tool
+        contextWindow: 200000
+        maxTokens: 32768
+      - id: teck-fast-text
+        name: Fast Text
+        contextWindow: 200000
+        maxTokens: 32768
+      - id: teck-researcher
+        name: Researcher
+        contextWindow: 200000
+        maxTokens: 32768

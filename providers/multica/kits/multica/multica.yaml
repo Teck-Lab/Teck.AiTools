@@ -2,7 +2,7 @@
 schemaVersion: "3"
 kind: mixin
 displayName: Multica daemon
-description: Pinned Multica CLI, shared OMP skills and Hindsight memory, and startup hook.
+description: Pinned Multica CLI, local Headroom and RTK, OMP skills, and Hindsight memory.
 requires:
   - dk.tecklab/base >= 1
   - omp >= 19.0.1
@@ -47,10 +47,20 @@ capabilities:
         - command: install -d -o agent -g agent -m 700 /home/agent/.omp/agent/skills && cp -R /usr/local/share/teck-multica/skills/. /home/agent/.omp/agent/skills/ && chown -R agent:agent /home/agent/.omp/agent/skills
           user: "0"
           description: Install reusable OMP skills for Multica runtime discovery.
+        - command: rtk init --agent omp --global --no-patch
+          user: agent
+          description: Install RTK's native OMP shell-output extension once.
+        - command: install -d -o agent -g agent -m 700 /home/agent/.config/rtk && install -o agent -g agent -m 600 /usr/local/share/teck-multica/rtk-config.toml /home/agent/.config/rtk/config.toml
+          user: "0"
+          description: Keep RTK from rewriting GitHub publication commands.
         - command: multica config set app_url "https://${{ kit.args.appHost }}" && multica config set server_url "https://${{ kit.args.serverHost }}"
           user: agent
           description: Configure the self-hosted Multica server before the first login.
       startup:
+        - command: [/bin/sh, /usr/local/lib/teck-multica/start-headroom.sh]
+          user: agent
+          background: true
+          description: Run local Headroom compression for OMP model requests.
         - command: [/bin/sh, /usr/local/lib/teck-multica/start-daemon.sh, "${{ kit.args.appHost }}", "${{ kit.args.serverHost }}"]
           user: agent
           background: true

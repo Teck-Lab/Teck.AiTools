@@ -5,7 +5,7 @@ import { fileURLToPath } from 'node:url';
 
 const provider = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const shared = resolve(provider, '../../shared');
-export const kitNames = Object.freeze(['base', 'omp', 'devtools', 'browser', 'kubernetes', 'omniroute', 'mcphub', 'multica']);
+export const kitNames = Object.freeze(['base', 'omp', 'devtools', 'browser', 'kubernetes', 'litellm', 'mcphub', 'multica']);
 const slash = value => value.replaceAll('\\', '/');
 const sha256 = bytes => createHash('sha256').update(bytes).digest('hex');
 
@@ -47,12 +47,12 @@ export function stageKitSources({ destination, sharedRoot = shared, providerRoot
   copy(sharedRoot, 'kits/base/base.dockerfile', 'base/base.dockerfile');
   for (const file of ['base.yaml', 'context.md']) copy(providerRoot, `kits/base/${file}`, `base/${file}`);
   for (const name of ['omp', 'devtools', 'browser', 'kubernetes']) walk(sharedRoot, `kits/${name}`, name);
-  // The shared OmniRoute mixin binds the host-side Docker secret for every
-  // OMP run, including Multica's temporary Agent Builder.
-  walk(sharedRoot, 'kits/omniroute', 'omniroute');
+  // The LiteLLM mixin binds the host-side virtual key for every OMP run,
+  // including Multica's temporary Agent Builder.
+  walk(providerRoot, 'kits/litellm', 'litellm');
   walk(providerRoot, 'kits/mcphub', 'mcphub');
   walk(providerRoot, 'kits/multica', 'multica');
-  copy(sharedRoot, 'runtime/omp/models.yml', 'multica/models.yml');
+  copy(providerRoot, 'runtime/omp/models.yml', 'multica/models.yml');
   copy(sharedRoot, 'runtime/omp/config.yml', 'multica/config.yml', text => {
     const match = text.match(/^task:(\r?\n)  isolation:\r?\n    enabled: false$/m);
     if (!match || text.match(/^task:(\r?\n)  isolation:/gm)?.length !== 1) throw Error('Shared OMP task settings changed; review Multica task isolation');
@@ -60,9 +60,18 @@ export function stageKitSources({ destination, sharedRoot = shared, providerRoot
     const github = [...text.matchAll(/^github:(\r?\n)  enabled: true$/gm)];
     if (github.length !== 1) throw Error('Shared OMP GitHub setting changed; review Multica MCP publication routing');
     if (/^bash:/m.test(text)) throw Error('Shared OMP bash policy changed; review Multica GitHub MCP enforcement');
-    const config = text.replace(match[0], `task:${nl}  agentModelOverrides:${nl}    reviewer: omniroute/teck-advisor${nl}    security-reviewer: omniroute/teck-advisor${nl}  eager: preferred${nl}  isolation:${nl}    enabled: true`)
+    const config = text.replace(match[0], `task:${nl}  agentModelOverrides:${nl}    reviewer: openai-codex/gpt-6.2-sol${nl}    security-reviewer: openai-codex/gpt-6.2-sol${nl}  eager: preferred${nl}  isolation:${nl}    enabled: true`)
+      .replaceAll('omniroute/teck-orchestrator', 'openai-codex/gpt-6.2-sol')
+      .replaceAll('omniroute/teck-advisor', 'openai-codex/gpt-6.2-sol')
+      .replaceAll('omniroute/teck-executor', 'openai-codex/gpt-6.2-sol')
+      .replaceAll('omniroute/teck-judge', 'litellm/teck-fast-tool')
+      .replaceAll('omniroute/teck-fast-tool', 'litellm/teck-fast-tool')
+      .replaceAll('omniroute/teck-fast-text', 'litellm/teck-fast-text')
+      .replaceAll('omniroute/teck-researcher', 'litellm/teck-researcher')
+      .replace('    omniroute: 4', '    litellm: 4')
+      .replace('  maxInFlightRequests:', `  openaiWebsockets: off${nl}  maxInFlightRequests:`)
       .replace(/^github:(\r?\n)  enabled: true$/m, (_, lineBreak) => `github:${lineBreak}  enabled: false`);
-    return `${config}${config.endsWith(nl) ? '' : nl}bash:${nl}  patterns:${nl}    - match: "git commit*"${nl}      approval: deny${nl}    - match: "git push*"${nl}      approval: deny${nl}    - match: "git -C * commit*"${nl}      approval: deny${nl}    - match: "git -C * push*"${nl}      approval: deny${nl}    - match: "git -c * commit*"${nl}      approval: deny${nl}    - match: "git -c * push*"${nl}      approval: deny${nl}    - match: "gh *"${nl}      approval: deny${nl}`;
+    return `${config}${config.endsWith(nl) ? '' : nl}bash:${nl}  patterns:${nl}    - match: "git commit*"${nl}      approval: deny${nl}    - match: "git push*"${nl}      approval: deny${nl}    - match: "git -C * commit*"${nl}      approval: deny${nl}    - match: "git -C * push*"${nl}      approval: deny${nl}    - match: "git -c * commit*"${nl}      approval: deny${nl}    - match: "git -c * push*"${nl}      approval: deny${nl}    - match: "gh *"${nl}      approval: deny${nl}    - match: "rtk git commit*"${nl}      approval: deny${nl}    - match: "rtk git push*"${nl}      approval: deny${nl}    - match: "rtk gh *"${nl}      approval: deny${nl}    - match: "rtk run*"${nl}      approval: deny${nl}    - match: "rtk bypass*"${nl}      approval: deny${nl}    - match: "rtk proxy*"${nl}      approval: deny${nl}`;
   });
   for (const file of ['WATCHDOG.md', 'WATCHDOG.yml']) copy(providerRoot, `runtime/omp/${file}`, `multica/${file}`);
   walk(providerRoot, 'runtime/omp/agents', 'multica/agents');

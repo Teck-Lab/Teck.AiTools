@@ -1,0 +1,27 @@
+# syntax=docker/sandbox-kit:3
+schemaVersion: "3"
+kind: mixin
+displayName: LiteLLM access
+description: Host-managed LiteLLM virtual key for sandbox agents and Codex OAuth forwarding.
+provides:
+  - dk.tecklab/litellm-access@1
+capabilities:
+  - type: com.docker.sandbox/network-policy@1
+    config:
+      runtime:
+        allow:
+          - litellm.tecklab.dk:443
+  - type: com.docker.sandbox/credential@1
+    config:
+      service: litellm
+      phase: runtime
+      apiKey:
+        name: LITELLM_API_KEY
+        proxyManaged: true
+        inject:
+          - domain: litellm.tecklab.dk
+            header: Authorization
+            format: "Bearer %s"
+          - domain: litellm.tecklab.dk
+            header: x-litellm-api-key
+            format: "%s"
