@@ -41,7 +41,7 @@ The [OmniRoute compression profiles](docs/omniroute-compression.md) define named
 
 ## Published Docker Sandbox kits
 
-The [Publish Docker Sandbox kits](.github/workflows/publish-kits.yml) action builds the v3 components for Orca, Paseo, and Multica, then publishes one digest-pinned workload set per provider to GHCR. It runs after kit source changes on `main`; Actions can also run it manually for one provider. A manual run can reuse signed component images from a prior full commit SHA when only set packaging changes. Each set is tagged `sha-<full AiTools commit>` and the job summary gives the immutable `@sha256:` reference. The workflow stages repository-controlled kit files without personal credentials.
+The [Publish Docker Sandbox kits](.github/workflows/publish-kits.yml) action builds the v3 components for Orca, Paseo, and Multica, then publishes one digest-pinned workload set per provider to GHCR. On `main`, provider-only source changes publish only that provider; shared kit changes publish all three. Actions can also run it manually for one provider. A manual run can reuse signed component images from a prior full commit SHA when only set packaging changes. Each set is tagged `sha-<full AiTools commit>` and the job summary gives the immutable `@sha256:` reference. The workflow stages repository-controlled kit files without personal credentials.
 
 | Provider | Published workload set |
 | --- | --- |

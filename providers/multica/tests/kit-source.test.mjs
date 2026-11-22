@@ -130,7 +130,12 @@ test('Multica kit configures its URLs and bootstraps daemon auth from the Docker
     const watchdog = YAML.parseDocument(readFileSync(join(root, 'kits', 'multica', 'WATCHDOG.yml'), 'utf8'));
     const reviewer = readFileSync(join(root, 'kits', 'multica', 'agents', 'quality-reviewer.md'), 'utf8');
     assert.deepEqual(watchdog.errors, []);
-    assert.equal(watchdog.toJS().advisors[0].name, 'Implementation watchdog');
+    const advisors = watchdog.toJS().advisors;
+    assert.deepEqual(advisors.map(({ name }) => name), [
+      'Implementation watchdog', 'Architecture', 'Security', 'Fixer', 'Final reviewer', 'Release',
+    ]);
+    assert.deepEqual(advisors.filter(({ enabled }) => enabled).map(({ name }) => name), ['Implementation watchdog']);
+    assert.ok(advisors.every(({ model }) => !model || model.startsWith('openai-codex/gpt-6.2-sol')));
     assert.match(reviewer, /^---\nname: quality-reviewer/m);
     assert.match(reviewer, /^model: "@advisor"$/m);
   } finally {

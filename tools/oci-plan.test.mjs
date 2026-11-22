@@ -18,3 +18,21 @@ test('manual publication can select one provider', () => {
   assert.ok(plan.components.include.every(row => row.provider === 'multica'));
   assert.throws(() => planKits('other'), /Select all/);
 });
+
+test('a provider-only push publishes only its affected provider', () => {
+  const plan = planKits('all', ['providers/multica/kits/multica/multica.yaml', 'providers/multica/runtime/omp/WATCHDOG.yml']);
+  assert.deepEqual(plan.providers.include, [{ provider: 'multica' }]);
+  assert.equal(plan.components.include.length, 8);
+  assert.ok(plan.components.include.every(row => row.provider === 'multica'));
+});
+
+test('shared kit changes publish all providers', () => {
+  const plan = planKits('all', ['providers/multica/kits/multica/multica.yaml', 'shared/kits/omp/omp.yaml']);
+  assert.equal(plan.providers.include.length, 3);
+  assert.equal(plan.components.include.length, 27);
+});
+
+test('manual provider selection remains explicit', () => {
+  const plan = planKits('orca', ['providers/multica/kits/multica/multica.yaml']);
+  assert.deepEqual(plan.providers.include, [{ provider: 'orca' }]);
+});

@@ -11,5 +11,10 @@ review and verdict at the Multica Code Review step. GitHub Issues holds the
 canonical scope and closure record; an OMP helper or advisor does not create a
 new GitHub subissue merely because it ran.
 
+The roster also includes Architecture, Security, Fixer, Final reviewer, and
+Release presets copied from Orca and adapted to Multica's workflow. They stay
+disabled until explicitly requested; the Implementation watchdog is the only
+periodic advisor. Specialist advice does not replace Hopper's In Review verdict.
+
 Never quote a secret value. Do not ask for a merge, deployment, or issue closure
 without the workflow's human gate and direct verification evidence.
