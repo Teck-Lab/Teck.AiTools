@@ -7,107 +7,33 @@ providers:
     headers:
       x-headroom-base-url: https://litellm.tecklab.dk
     models:
-      - id: teck-orchestrator
-        name: Orchestrator
+      - id: gpt-6.2-sol
+        name: GPT 6.2 Sol
         api: openai-responses
         contextWindow: 500000
         maxTokens: 32768
         reasoning: true
         input: [text, image]
         thinking: { mode: effort, efforts: [low, medium, high, xhigh, max], defaultLevel: high }
-      - id: teck-advisor
-        name: Advisor
+      - id: gpt-6.2-astra
+        name: GPT 6.2 Astra
         api: openai-responses
         contextWindow: 500000
         maxTokens: 32768
         reasoning: true
         input: [text, image]
         thinking: { mode: effort, efforts: [low, medium, high, xhigh, max], defaultLevel: medium }
-      - id: teck-executor
-        name: Executor
-        api: openai-responses
-        contextWindow: 500000
+      - id: deepseek-v4.1-flash
+        name: DeepSeek V4.1 Flash
+        api: openai-completions
+        contextWindow: 700000
         maxTokens: 32768
-        reasoning: true
         input: [text, image]
-        thinking: { mode: effort, efforts: [low, medium, high, xhigh, max], defaultLevel: high }
-      - id: teck-judge
-        name: Judge
-        contextWindow: 200000
-        maxTokens: 32768
-      - id: teck-fast-tool
-        name: Fast Tool
-        contextWindow: 200000
-        maxTokens: 32768
-      - id: teck-fast-text
-        name: Fast Text
-        contextWindow: 200000
-        maxTokens: 32768
-      - id: teck-researcher
-        name: Researcher
-        contextWindow: 200000
-        maxTokens: 32768
-  omniroute:
-    baseUrl: http://127.0.0.1:8787/v1
-    api: openai-completions
-    apiKey: OMNIROUTE_API_KEY
-    authHeader: true
-    headers:
-      x-headroom-base-url: https://omniroute.tecklab.dk
-    models:
-      - id: teck-orchestrator
-        name: Orchestrator
-        headers:
-          x-omniroute-compression: teck-coordination
+      - id: gpt-6-luna
+        name: GPT 6 Luna
+        api: openai-responses
         contextWindow: 700000
         maxTokens: 32768
         reasoning: true
-        thinking: { mode: effort, efforts: [low, medium, high, xhigh, max], defaultLevel: high }
-      - id: teck-advisor
-        name: Advisor
-        headers:
-          x-omniroute-compression: teck-coordination
-        contextWindow: 700000
-        maxTokens: 32768
-        reasoning: true
-        thinking: { mode: effort, efforts: [low, medium, high, xhigh, max], defaultLevel: medium }
-      - id: teck-judge
-        name: Judge
-        headers:
-          x-omniroute-compression: teck-coordination
-        contextWindow: 1000000
-        maxTokens: 32768
-        reasoning: true
-        thinking: { mode: effort, efforts: [low, medium, high], defaultLevel: high }
-      - id: teck-executor
-        name: Executor
-        headers:
-          x-omniroute-compression: teck-execution
-        contextWindow: 500000
-        maxTokens: 32768
-        reasoning: true
-        thinking: { mode: effort, efforts: [low, medium, high, xhigh, max], defaultLevel: high }
-      - id: teck-fast-tool
-        name: Fast Tool
-        headers:
-          x-omniroute-compression: teck-execution
-        contextWindow: 250000
-        maxTokens: 32768
-        reasoning: true
-        thinking: { mode: effort, efforts: [low, medium, high, xhigh, max], defaultLevel: medium }
-      - id: teck-fast-text
-        name: Fast Text
-        headers:
-          x-omniroute-compression: teck-text
-        contextWindow: 250000
-        maxTokens: 32768
-        reasoning: true
-        thinking: { mode: effort, efforts: [low, medium, high, xhigh, max], defaultLevel: medium }
-      - id: teck-researcher
-        name: Researcher
-        headers:
-          x-omniroute-compression: teck-coordination
-        contextWindow: 250000
-        maxTokens: 32768
-        reasoning: true
-        thinking: { mode: effort, efforts: [low, medium, high, xhigh, max], defaultLevel: high }
+        input: [text, image]
+        thinking: { mode: effort, efforts: [low, medium, high, xhigh, max], defaultLevel: low }

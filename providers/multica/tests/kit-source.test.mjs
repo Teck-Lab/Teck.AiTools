@@ -9,28 +9,24 @@ import { kitNames, stageKitSources } from '../scripts/kit-source.mjs';
 const require = createRequire(import.meta.url);
 const YAML = require('../../../shared/runtime/kubernetes/vendor/yaml');
 
-test('Multica kit routes both gateways through Docker-managed credentials and stages reusable OMP skills', () => {
+test('Multica kit routes LiteLLM through Docker-managed credentials and stages reusable OMP skills', () => {
   const root = mkdtempSync(join(tmpdir(), 'teck-multica-mcp-kit-'));
   try {
     const manifest = stageKitSources({ destination: join(root, 'kits') });
     const mcphub = YAML.parseDocument(readFileSync(join(root, 'kits', 'mcphub', 'mcphub.yaml'), 'utf8'));
     const litellm = YAML.parseDocument(readFileSync(join(root, 'kits', 'litellm', 'litellm.yaml'), 'utf8'));
-    const omniroute = YAML.parseDocument(readFileSync(join(root, 'kits', 'omniroute', 'omniroute.yaml'), 'utf8'));
     assert.deepEqual(mcphub.errors, []);
     assert.deepEqual(litellm.errors, []);
-    assert.deepEqual(omniroute.errors, []);
-    const capabilities = [...mcphub.toJS().capabilities, ...litellm.toJS().capabilities, ...omniroute.toJS().capabilities];
+    const capabilities = [...mcphub.toJS().capabilities, ...litellm.toJS().capabilities];
     assert.ok(capabilities.some(capability => capability.type === 'com.docker.sandbox/network-policy@1' &&
       capability.config.runtime.allow.includes('mcp.tecklab.dk:443')));
     assert.ok(capabilities.some(capability => capability.type === 'com.docker.sandbox/network-policy@1' &&
       capability.config.runtime.allow.includes('hindsight-api.tecklab.dk:443')));
     assert.ok(capabilities.some(capability => capability.type === 'com.docker.sandbox/network-policy@1' &&
       capability.config.runtime.allow.includes('litellm.tecklab.dk:443')));
-    assert.ok(capabilities.some(capability => capability.type === 'com.docker.sandbox/network-policy@1' &&
-      capability.config.runtime.allow.includes('omniroute.tecklab.dk:443')));
     const credentials = capabilities.filter(capability => capability.type === 'com.docker.sandbox/credential@1');
-    assert.deepEqual(credentials.map(credential => credential.config.service).sort(), ['hindsight', 'litellm', 'omniroute']);
-    for (const [service, name, domain] of [['litellm', 'LITELLM_API_KEY', 'litellm.tecklab.dk'], ['omniroute', 'OMNIROUTE_API_KEY', 'omniroute.tecklab.dk'], ['hindsight', 'HINDSIGHT_API_TOKEN', 'hindsight-api.tecklab.dk']]) {
+    assert.deepEqual(credentials.map(credential => credential.config.service).sort(), ['hindsight', 'litellm']);
+    for (const [service, name, domain] of [['litellm', 'LITELLM_API_KEY', 'litellm.tecklab.dk'], ['hindsight', 'HINDSIGHT_API_TOKEN', 'hindsight-api.tecklab.dk']]) {
       const credential = credentials.find(item => item.config.service === service);
       assert.equal(credential.config.apiKey.name, name);
       assert.equal(credential.config.apiKey.proxyManaged, true);
@@ -41,14 +37,13 @@ test('Multica kit routes both gateways through Docker-managed credentials and st
     for (const name of kitNames) {
       const descriptor = YAML.parseDocument(readFileSync(join(root, 'kits', name, `${name}.yaml`), 'utf8'));
       assert.deepEqual(descriptor.errors, []);
-      if (!['litellm', 'omniroute', 'mcphub'].includes(name)) assert.ok(!descriptor.toJS().capabilities?.some(capability => capability.type === 'com.docker.sandbox/credential@1'), `${name} unexpectedly requires a Docker host credential`);
+      if (!['litellm', 'mcphub'].includes(name)) assert.ok(!descriptor.toJS().capabilities?.some(capability => capability.type === 'com.docker.sandbox/credential@1'), `${name} unexpectedly requires a Docker host credential`);
     }
     assert.ok(manifest.provenance.some(row => row.destination === 'mcphub/mcphub.yaml' &&
       row.source === 'provider/kits/mcphub/mcphub.yaml'));
     assert.ok(manifest.provenance.some(row => row.destination === 'litellm/litellm.yaml' &&
       row.source === 'provider/kits/litellm/litellm.yaml'));
-    assert.ok(manifest.provenance.some(row => row.destination === 'omniroute/omniroute.yaml' &&
-      row.source === 'shared/kits/omniroute/omniroute.yaml'));
+    assert.ok(!manifest.provenance.some(row => row.destination.startsWith('omniroute/')));
     assert.ok(manifest.provenance.some(row => row.destination === 'multica/skills/dotnet-best-practices/SKILL.md'));
     for (const path of ['multica/WATCHDOG.md', 'multica/WATCHDOG.yml', 'multica/agents/quality-reviewer.md']) {
       assert.ok(manifest.provenance.some(row => row.destination === path && row.source.startsWith('provider/runtime/omp/')), path);
@@ -103,32 +98,19 @@ test('Multica kit configures its URLs and bootstraps daemon auth from the Docker
     const models = YAML.parseDocument(readFileSync(join(root, 'kits', 'multica', 'models.yml'), 'utf8'));
     assert.deepEqual(models.errors, []);
     const modelProvider = models.toJS().providers.litellm;
-    const omniProvider = models.toJS().providers.omniroute;
+    assert.equal(models.toJS().providers.omniroute, undefined);
     assert.equal(modelProvider.baseUrl, 'http://127.0.0.1:8787/v1');
     assert.equal(modelProvider.apiKey, 'LITELLM_API_KEY');
     assert.equal(models.toJS().providers['openai-codex'], undefined);
     assert.deepEqual(modelProvider.models.map(({ id }) => id), [
-      'teck-orchestrator', 'teck-advisor', 'teck-executor', 'teck-judge',
-      'teck-fast-tool', 'teck-fast-text', 'teck-researcher',
+      'gpt-6.2-sol', 'gpt-6.2-astra', 'deepseek-v4.1-flash', 'gpt-6-luna',
     ]);
-    assert.ok(modelProvider.models.slice(0, 3).every(({ api }) => api === 'openai-responses'));
-    assert.ok(modelProvider.models.slice(3).every(({ api }) => api === undefined));
-    assert.equal(omniProvider.baseUrl, 'http://127.0.0.1:8787/v1');
-    assert.equal(omniProvider.apiKey, 'OMNIROUTE_API_KEY');
-    assert.equal(omniProvider.headers['x-headroom-base-url'], 'https://omniroute.tecklab.dk');
-    assert.deepEqual(omniProvider.models.map(({ id }) => id).sort(), modelProvider.models.map(({ id }) => id).sort());
-    assert.deepEqual(Object.fromEntries(omniProvider.models.map(({ id, headers }) => [id, headers['x-omniroute-compression']])), {
-      'teck-orchestrator': 'teck-coordination',
-      'teck-advisor': 'teck-coordination',
-      'teck-judge': 'teck-coordination',
-      'teck-executor': 'teck-execution',
-      'teck-fast-tool': 'teck-execution',
-      'teck-fast-text': 'teck-text',
-      'teck-researcher': 'teck-coordination',
-    });
+    assert.ok(modelProvider.models.filter(({ id }) => id.startsWith('gpt-')).every(({ api }) => api === 'openai-responses'));
+    assert.equal(modelProvider.models.find(({ id }) => id === 'deepseek-v4.1-flash').api, 'openai-completions');
+    assert.equal(modelProvider.headers['x-headroom-base-url'], 'https://litellm.tecklab.dk');
     const headroom = readFileSync(join(root, 'kits', 'multica', 'start-headroom.sh'), 'utf8');
-    assert.match(headroom, /HEADROOM_ALLOWED_BASE_URLS=https:\/\/litellm\.tecklab\.dk,https:\/\/omniroute\.tecklab\.dk/);
-    assert.match(headroom, /--openai-api-url https:\/\/omniroute\.tecklab\.dk/);
+    assert.match(headroom, /HEADROOM_ALLOWED_BASE_URLS=https:\/\/litellm\.tecklab\.dk/);
+    assert.match(headroom, /--openai-api-url https:\/\/litellm\.tecklab\.dk/);
     const configText = readFileSync(join(root, 'kits', 'multica', 'config.yml'), 'utf8');
     const sharedText = readFileSync(join(import.meta.dirname, '../../../shared/runtime/omp/config.yml'), 'utf8');
     const config = YAML.parseDocument(configText);
@@ -137,8 +119,8 @@ test('Multica kit configures its URLs and bootstraps daemon auth from the Docker
     assert.deepEqual(shared.errors, []);
     const configValues = config.toJS();
     assert.deepEqual(configValues.task.agentModelOverrides, {
-      reviewer: 'omniroute/teck-advisor',
-      'security-reviewer': 'omniroute/teck-advisor',
+      reviewer: 'litellm/gpt-6.2-sol',
+      'security-reviewer': 'litellm/gpt-6.2-sol',
     });
     assert.equal(configValues.task.eager, 'preferred');
     assert.equal(configValues.task.isolation.enabled, true);
@@ -149,14 +131,15 @@ test('Multica kit configures its URLs and bootstraps daemon auth from the Docker
       'rtk git push*', 'rtk gh *', 'rtk run*', 'rtk bypass*', 'rtk proxy*',
     ].map(match => ({ match, approval: 'deny' })));
     assert.equal(shared.toJS().github.enabled, true);
-    assert.equal(configValues.modelRoles.default, 'omniroute/teck-orchestrator');
-    assert.equal(configValues.modelRoles.advisor, 'omniroute/teck-advisor');
-    assert.equal(configValues.modelRoles.task, 'omniroute/teck-executor');
-    assert.equal(configValues.modelRoles.judge, 'omniroute/teck-judge');
-    assert.equal(configValues.modelRoles.smol, 'omniroute/teck-fast-tool');
-    assert.ok(configValues.enabledModels.includes('litellm/teck-orchestrator'));
+    assert.equal(configValues.modelRoles.default, 'litellm/gpt-6.2-sol');
+    assert.equal(configValues.modelRoles.slow, 'litellm/gpt-6.2-astra');
+    assert.equal(configValues.modelRoles.advisor, 'litellm/gpt-6.2-sol');
+    assert.equal(configValues.modelRoles.task, 'litellm/deepseek-v4.1-flash');
+    assert.equal(configValues.modelRoles.judge, 'litellm/gpt-6-luna');
+    assert.equal(configValues.modelRoles.smol, 'litellm/gpt-6-luna');
+    assert.deepEqual(configValues.enabledModels, modelProvider.models.map(({ id }) => `litellm/${id}`));
     assert.equal(configValues.providers.openaiWebsockets, undefined);
-    assert.equal(configValues.providers.maxInFlightRequests.omniroute, 4);
+    assert.equal(configValues.providers.maxInFlightRequests.omniroute, undefined);
     assert.equal(configValues.providers.maxInFlightRequests.litellm, 4);
     assert.equal(configValues.memory.backend, 'hindsight');
     assert.equal(configValues.hindsight.apiUrl, 'https://hindsight-api.tecklab.dk');
@@ -174,7 +157,7 @@ test('Multica kit configures its URLs and bootstraps daemon auth from the Docker
       'Implementation watchdog', 'Architecture', 'Security', 'Fixer', 'Final reviewer', 'Release',
     ]);
     assert.deepEqual(advisors.filter(({ enabled }) => enabled).map(({ name }) => name), ['Implementation watchdog']);
-    assert.ok(advisors.every(({ model }) => !model || model.startsWith('omniroute/teck-advisor')));
+    assert.ok(advisors.every(({ model }) => !model || model.startsWith('litellm/gpt-6.2-sol')));
     assert.match(reviewer, /^---\nname: quality-reviewer/m);
     assert.match(reviewer, /^model: "@advisor"$/m);
   } finally {
