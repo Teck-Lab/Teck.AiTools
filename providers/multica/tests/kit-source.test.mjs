@@ -45,6 +45,14 @@ test('Multica kit routes LiteLLM through Docker-managed credentials and stages r
       row.source === 'provider/kits/litellm/litellm.yaml'));
     assert.ok(!manifest.provenance.some(row => row.destination.startsWith('omniroute/')));
     assert.ok(manifest.provenance.some(row => row.destination === 'multica/skills/dotnet-best-practices/SKILL.md'));
+    for (const path of [
+      'ui-sdk/SKILL.md', 'ui-sdk/references/testing.md', 'ui-sdk/LICENSE',
+      'ui-ux-pro-max/SKILL.md', 'ui-ux-pro-max/scripts/search.py',
+      'ui-ux-pro-max/data/ux-guidelines.csv', 'ui-ux-pro-max/LICENSE',
+    ]) {
+      assert.ok(manifest.provenance.some(row => row.destination === `multica/skills/${path}` &&
+        row.source === `shared/runtime/omp/skills/${path}`), path);
+    }
     for (const path of ['multica/WATCHDOG.md', 'multica/WATCHDOG.yml', 'multica/agents/quality-reviewer.md']) {
       assert.ok(manifest.provenance.some(row => row.destination === path && row.source.startsWith('provider/runtime/omp/')), path);
     }
@@ -73,11 +81,14 @@ test('Multica kit configures its URLs and bootstraps daemon auth from the Docker
     assert.match(lifecycle.config.install[3].command, /WATCHDOG\.md.*WATCHDOG\.yml/);
     assert.match(lifecycle.config.install[4].command, /\/home\/agent\/\.omp\/agent\/agents/);
     assert.match(lifecycle.config.install[5].command, /\/home\/agent\/\.omp\/agent\/skills/);
-    assert.match(lifecycle.config.install[6].command, /rtk init --agent omp --global --no-patch/);
-    assert.match(lifecycle.config.install[7].command, /rtk-config\.toml/);
-    assert.match(lifecycle.config.install[8].command, /multica config set app_url "https:\/\/\$\{\{ kit\.args\.appHost \}\}"/);
-    assert.match(lifecycle.config.install[8].command, /multica config set server_url "https:\/\/\$\{\{ kit\.args\.serverHost \}\}"/);
-    assert.equal(lifecycle.config.install[8].user, 'agent');
+    assert.match(lifecycle.config.install[6].command, /cp -R \/home\/agent\/\.omp\/agent\/skills\/ui-sdk \/home\/agent\/\.claude\/skills\//);
+    assert.match(lifecycle.config.install[6].command, /cp -R \/home\/agent\/\.omp\/agent\/skills\/ui-ux-pro-max \/home\/agent\/\.claude\/skills\//);
+    assert.equal(lifecycle.config.install[6].user, 'agent');
+    assert.match(lifecycle.config.install[7].command, /rtk init --agent omp --global --no-patch/);
+    assert.match(lifecycle.config.install[8].command, /rtk-config\.toml/);
+    assert.match(lifecycle.config.install[9].command, /multica config set app_url "https:\/\/\$\{\{ kit\.args\.appHost \}\}"/);
+    assert.match(lifecycle.config.install[9].command, /multica config set server_url "https:\/\/\$\{\{ kit\.args\.serverHost \}\}"/);
+    assert.equal(lifecycle.config.install[9].user, 'agent');
     assert.equal(lifecycle.config.startup[0].background, true);
     assert.equal(lifecycle.config.startup[0].user, 'agent');
     assert.deepEqual(lifecycle.config.startup[0].command.slice(0, 2), ['/bin/sh', '/usr/local/lib/teck-multica/start-headroom.sh']);

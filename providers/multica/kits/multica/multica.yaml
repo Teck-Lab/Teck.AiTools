@@ -47,6 +47,9 @@ capabilities:
         - command: install -d -o agent -g agent -m 700 /home/agent/.omp/agent/skills && cp -R /usr/local/share/teck-multica/skills/. /home/agent/.omp/agent/skills/ && chown -R agent:agent /home/agent/.omp/agent/skills
           user: "0"
           description: Install reusable OMP skills for Multica runtime discovery.
+        - command: install -d -m 700 /home/agent/.claude/skills && cp -R /home/agent/.omp/agent/skills/ui-sdk /home/agent/.claude/skills/ && cp -R /home/agent/.omp/agent/skills/ui-ux-pro-max /home/agent/.claude/skills/
+          user: agent
+          description: Make the UI skills available to Claude Code from the same pinned copies.
         - command: rtk init --agent omp --global --no-patch
           user: agent
           description: Install RTK's native OMP shell-output extension once.
