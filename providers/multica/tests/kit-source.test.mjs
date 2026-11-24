@@ -94,7 +94,8 @@ test('Multica kit configures its URLs and bootstraps daemon auth from the Docker
     assert.match(script, /multica login --token="\$\{MULTICA_BOOTSTRAP_PAT\}"/);
     assert.match(script, /env -u MULTICA_BOOTSTRAP_PAT multica daemon start/);
     assert.match(script, /multica daemon start/);
-    assert.match(script, /127\.0\.0\.1:8787\/health/);
+    assert.match(script, /127\.0\.0\.1:8787\/readyz/);
+    assert.match(script, /\.kompress\.status == "loaded"/);
     const models = YAML.parseDocument(readFileSync(join(root, 'kits', 'multica', 'models.yml'), 'utf8'));
     assert.deepEqual(models.errors, []);
     const modelProvider = models.toJS().providers.litellm;

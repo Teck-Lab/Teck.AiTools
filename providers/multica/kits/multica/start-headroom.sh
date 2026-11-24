@@ -5,6 +5,8 @@ set -eu
 # Headroom to use the sandbox's outbound proxy for that one upstream.
 export HEADROOM_ALLOWED_BASE_URLS=https://litellm.tecklab.dk
 export HEADROOM_BEACON=off
+export HF_HOME=/opt/headroom/hf-cache
+export HF_HUB_OFFLINE=1
 
 while :; do
     /opt/headroom/bin/headroom proxy \
