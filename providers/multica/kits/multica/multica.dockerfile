@@ -19,9 +19,12 @@ RUN set -eu; \
     /out/usr/local/bin/multica version
 FROM docker.io/sbx/shell-docker-image@sha256:ef7339e2a393b116314815788d02727c833207e4438e661462a2313ff4f2a3ff AS headroom
 USER root
+ENV HF_HOME=/opt/headroom/hf-cache
 RUN apt-get update && apt-get install -y --no-install-recommends python3-venv build-essential \
     && python3 -m venv /opt/headroom \
     && /opt/headroom/bin/pip install --no-cache-dir 'headroom-ai[proxy]==0.45.0' \
+    && /opt/headroom/bin/python -c "from headroom.transforms.kompress_compressor import warm_kompress_model; raise SystemExit(0 if warm_kompress_model(allow_download=True) else 1)" \
+    && chmod -R a+rX "$HF_HOME" \
     && /opt/headroom/bin/headroom --version
 
 FROM docker.io/library/debian:bookworm-slim AS rtk

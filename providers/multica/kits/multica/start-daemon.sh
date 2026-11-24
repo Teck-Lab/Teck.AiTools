@@ -14,8 +14,13 @@ multica config set server_url "https://$server_host"
 
 name="${TECK_MULTICA_SANDBOX_NAME:-${SANDBOX_NAME:-$(hostname)}}"
 while :; do
-    if ! curl -fsS --max-time 2 http://127.0.0.1:8787/health >/dev/null 2>&1; then
+    if ! curl -fsS --max-time 2 http://127.0.0.1:8787/readyz >/dev/null 2>&1; then
         echo "Headroom is not ready; delaying Multica daemon startup." >&2
+        sleep 5
+        continue
+    fi
+    if ! curl -fsS --max-time 2 http://127.0.0.1:8787/debug/warmup | jq -e '.kompress.status == "loaded"' >/dev/null 2>&1; then
+        echo "Headroom Kompress is not ready; delaying Multica daemon startup." >&2
         sleep 5
         continue
     fi
