@@ -7,7 +7,7 @@ requires:
   - dk.tecklab/base >= 1
   - omp >= 19.0.1
 provides:
-  - dk.tecklab/multica@0.11.1
+  - dk.tecklab/multica@0.12.1
 args:
   appHost:
     required: true

@@ -127,8 +127,8 @@ test('staged shared kits are complete and provider overlay is separate', () => w
     assert.deepEqual(document.errors, [], `${name} YAML is invalid`);
     assert.equal(document.toJS().kind, name === 'base' ? 'workload' : 'mixin');
   }
-  assert.match(readFileSync(join(destination, 'omp/omp.dockerfile'), 'utf8'), /@oh-my-pi\/pi-coding-agent@18\.20\.0/);
-  assert.match(readFileSync(join(destination, 'multica/multica.dockerfile'), 'utf8'), /MULTICA_VERSION=0\.11\.0/);
+  assert.match(readFileSync(join(destination, 'omp/omp.dockerfile'), 'utf8'), /@oh-my-pi\/pi-coding-agent@19\.0\.1/);
+  assert.match(readFileSync(join(destination, 'multica/multica.dockerfile'), 'utf8'), /MULTICA_VERSION=0\.12\.1/);
   assert.ok(readFileSync(join(destination, 'devtools/assets/install-devtools.mjs'), 'utf8').includes('Kubernetes executables belong to the Kubernetes mixin'));
   assert.ok(readFileSync(join(destination, 'browser/assets/install-browser.mjs'), 'utf8').length > 0);
   assert.ok(readFileSync(join(destination, 'kubernetes/assets/kubernetes-prerequisites.sh'), 'utf8').length > 0);
