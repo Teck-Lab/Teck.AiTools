@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1.7
 FROM docker.io/library/debian:bookworm-slim AS build
-ARG MULTICA_VERSION=0.11.1
+ARG MULTICA_VERSION=0.12.1
 RUN apt-get update && apt-get install -y --no-install-recommends ca-certificates curl \
     && rm -rf /var/lib/apt/lists/*
 RUN set -eu; \
