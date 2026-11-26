@@ -73,10 +73,12 @@ export function stageKitSources({ destination, sharedRoot = shared, providerRoot
     if (!modelRefs.length || modelRefs.some(([, id]) => !models[id])) throw Error('Shared OMP model roles changed; review Multica model routing');
     const enabled = text.match(/^enabledModels:\r?\n(?:  - [^\r\n]+\r?\n)+/m);
     if (!enabled) throw Error('Shared OMP enabled models changed; review Multica model routing');
+    const providerLimit = text.match(/^  maxInFlightRequests:\r?\n    omniroute: 4\r?\n/m);
+    if (!providerLimit) throw Error('Shared OMP provider limit changed; review Multica request concurrency');
     const config = text.replace(enabled[0], `enabledModels:${nl}${['gpt-6.2-sol', 'gpt-6.2-astra', 'deepseek-v4.1-flash', 'gpt-6-luna'].map(id => `  - litellm/${id}${nl}`).join('')}`)
       .replaceAll(/omniroute\/(teck-[a-z-]+)/g, (_, id) => `litellm/${models[id]}`)
-      .replace(match[0], `task:${nl}  agentModelOverrides:${nl}    reviewer: litellm/gpt-6.2-sol${nl}    security-reviewer: litellm/gpt-6.2-sol${nl}  eager: preferred${nl}  isolation:${nl}    enabled: true`)
-      .replace('    omniroute: 4', '    litellm: 4')
+      .replace(match[0], `task:${nl}  agentModelOverrides:${nl}    reviewer: litellm/gpt-6.2-sol${nl}    security-reviewer: litellm/gpt-6.2-sol${nl}  eager: always${nl}  isolation:${nl}    enabled: true`)
+      .replace(providerLimit[0], '')
       .replace(/^github:(\r?\n)  enabled: true$/m, (_, lineBreak) => `github:${lineBreak}  enabled: false`);
     return `${config}${config.endsWith(nl) ? '' : nl}bash:${nl}  patterns:${nl}    - match: "git commit*"${nl}      approval: deny${nl}    - match: "git push*"${nl}      approval: deny${nl}    - match: "git -C * commit*"${nl}      approval: deny${nl}    - match: "git -C * push*"${nl}      approval: deny${nl}    - match: "git -c * commit*"${nl}      approval: deny${nl}    - match: "git -c * push*"${nl}      approval: deny${nl}    - match: "gh *"${nl}      approval: deny${nl}    - match: "rtk git commit*"${nl}      approval: deny${nl}    - match: "rtk git push*"${nl}      approval: deny${nl}    - match: "rtk gh *"${nl}      approval: deny${nl}    - match: "rtk run*"${nl}      approval: deny${nl}    - match: "rtk bypass*"${nl}      approval: deny${nl}    - match: "rtk proxy*"${nl}      approval: deny${nl}`;
   });

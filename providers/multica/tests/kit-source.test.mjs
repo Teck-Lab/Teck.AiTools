@@ -136,7 +136,9 @@ test('Multica kit configures its URLs and bootstraps daemon auth from the Docker
       reviewer: 'litellm/gpt-6.2-sol',
       'security-reviewer': 'litellm/gpt-6.2-sol',
     });
-    assert.equal(configValues.task.eager, 'preferred');
+    assert.equal(configValues.task.eager, 'always');
+    assert.equal(configValues.task.maxConcurrency, undefined);
+    assert.equal(configValues.providers.maxInFlightRequests, undefined);
     assert.equal(configValues.task.isolation.enabled, true);
     assert.equal(configValues.github.enabled, false);
     assert.deepEqual(configValues.bash.patterns, [
@@ -153,8 +155,6 @@ test('Multica kit configures its URLs and bootstraps daemon auth from the Docker
     assert.equal(configValues.modelRoles.smol, 'litellm/gpt-6-luna');
     assert.deepEqual(configValues.enabledModels, modelProvider.models.map(({ id }) => `litellm/${id}`));
     assert.equal(configValues.providers.openaiWebsockets, undefined);
-    assert.equal(configValues.providers.maxInFlightRequests.omniroute, undefined);
-    assert.equal(configValues.providers.maxInFlightRequests.litellm, 4);
     assert.equal(configValues.memory.backend, 'hindsight');
     assert.equal(configValues.hindsight.apiUrl, 'https://hindsight-api.tecklab.dk');
     assert.ok(!configValues.hindsight.apiToken);
