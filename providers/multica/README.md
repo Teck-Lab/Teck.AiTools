@@ -83,4 +83,8 @@ The local source build of the full devtools/browser/Kubernetes kit needs substan
 
 The GitHub Actions release builds each component from `scripts/kit-source.mjs` in CI, records its GHCR digest, and uses `scripts/oci-release.mjs set --tag sha-<commit> --receipts <directory> --out <file>` to generate a digest-pinned v3 kit set. The set exposes `appHost` and `serverHost` so the network policy matches the self-hosted Multica domain supplied to `pool.mjs`.
 
+## Parent issue workflow
+
+Include the [parent and child execution rules](workflow-parent-execution.md) in the Teck Lab Coordination squad instructions and in the standing instructions for its leader Columbo and Platform change implementation owner Lovelace. The Product delivery and Platform change In Progress handoffs tell those owners to apply the rules. Product delivery uses the existing project lead Plan Approval step to approve the parent and the listed children together. Platform change uses its existing Plan Review gate. In both workflows, the Blocked handoff directs the project lead to answer on the affected child so the owner's wakeup can resume the work.
+
 References: [Docker Sandboxes kits](https://docs.docker.com/ai/sandboxes/kits/), [Multica daemon](https://multica.ai/docs/daemon-runtimes), [Multica self-hosting](https://multica.ai/docs/self-host-quickstart), [official OMP support](https://multica.ai/docs/install-agent-runtime).
