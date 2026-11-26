@@ -119,6 +119,8 @@ test('Multica kit configures its URLs and bootstraps daemon auth from the Docker
     ]);
     assert.ok(modelProvider.models.filter(({ id }) => id.startsWith('gpt-')).every(({ api }) => api === 'openai-responses'));
     assert.equal(modelProvider.models.find(({ id }) => id === 'deepseek-v4.1-flash').api, 'openai-completions');
+    assert.equal(modelProvider.models.find(({ id }) => id === 'deepseek-v4.1-flash').compat.sessionHeader, 'x-litellm-session-id');
+    assert.equal(modelProvider.models.find(({ id }) => id === 'deepseek-v4.1-flash').compat.supportsReasoningEffort, false);
     assert.equal(modelProvider.headers['x-headroom-base-url'], 'https://litellm.tecklab.dk');
     const headroom = readFileSync(join(root, 'kits', 'multica', 'start-headroom.sh'), 'utf8');
     assert.match(headroom, /HEADROOM_ALLOWED_BASE_URLS=https:\/\/litellm\.tecklab\.dk/);

@@ -26,6 +26,7 @@ providers:
       - id: deepseek-v4.1-flash
         name: DeepSeek V4.1 Flash
         api: openai-completions
+        compat: { sessionHeader: x-litellm-session-id, supportsReasoningEffort: false }
         contextWindow: 700000
         maxTokens: 32768
         input: [text, image]
