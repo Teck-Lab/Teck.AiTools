@@ -12,7 +12,7 @@ Prerequisites: Docker Sandboxes `sbx` with v3 kit support, a reachable self-host
 sbx secret set-custom --host multica.tecklab.dk --env MULTICA_BOOTSTRAP_PAT --placeholder 'mul_{rand}'
 ```
 
-The `mul_` prefix is required by Multica's token login. The host proxy substitutes the real PAT only when the placeholder appears in a request header to `multica.tecklab.dk`. Use a PAT created under **Settings → API Token**. This kit pins Multica CLI v0.12.1. The shared mixin pins official `@oh-my-pi/pi-coding-agent@19.0.1`, `@anthropic-ai/claude-code@2.1.330`, and `@debugmcp/mcp-debugger@0.26.0`.
+The `mul_` prefix is required by Multica's token login. The host proxy substitutes the real PAT only when the placeholder appears in a request header to `multica.tecklab.dk`. Use a PAT created under **Settings → API Token**. This kit pins Multica CLI v0.13.0. The shared mixin pins official `@oh-my-pi/pi-coding-agent@19.0.1`, `@anthropic-ai/claude-code@2.1.330`, and `@debugmcp/mcp-debugger@0.26.0`.
 
 The sandbox daemon allows up to 20 concurrent Multica runs, matching Multica's default. Agent-level concurrency settings can still impose a lower limit. Runs beyond the available slots stay queued until a slot is free.
 
