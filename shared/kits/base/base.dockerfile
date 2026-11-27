@@ -3,7 +3,7 @@ FROM docker.io/sbx/shell-docker-image@sha256:ef7339e2a393b116314815788d02727c833
 USER root
 ENV DEBIAN_FRONTEND=noninteractive
 RUN apt-get update \
-    && apt-get install -y --no-install-recommends git-lfs gnupg libgssapi-krb5-2 libicu-dev libssl3t64 zlib1g util-linux libnss3-tools libgtk-3-0t64 libvulkan1 fonts-liberation xdg-utils \
+    && apt-get install -y --no-install-recommends clangd gdb git-lfs gnupg libgssapi-krb5-2 libicu-dev libssl3t64 zlib1g util-linux libnss3-tools libgtk-3-0t64 libvulkan1 fonts-liberation xdg-utils \
     && NPM_CONFIG_CACHE=/tmp/teck-playwright-npm npm install --global --prefix /tmp/teck-playwright --no-audit --no-fund playwright-core@1.61.1 \
     && /tmp/teck-playwright/bin/playwright-core install-deps chromium \
     && rm -rf /var/lib/apt/lists/* /tmp/teck-playwright-npm /tmp/teck-playwright \
